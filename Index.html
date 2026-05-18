@@ -1,0 +1,1255 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>Quokka — Find Your Hobby</title>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;600;700;800&family=DM+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet"/>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+::-webkit-scrollbar{display:none}
+html,body{height:100%;background:#100D08;display:flex;align-items:center;justify-content:center;font-family:'DM Sans',sans-serif}
+button,input{font-family:'DM Sans',sans-serif;cursor:pointer}
+button:active{opacity:.85}
+
+/* Phone shell */
+#phone{
+  width:393px;height:788px;border-radius:44px;overflow:hidden;
+  display:flex;flex-direction:column;position:relative;
+  box-shadow:0 40px 100px rgba(0,0,0,.7),0 0 0 10px #1a1a1a,0 0 0 11px #2a2a2a;
+  background:#F4F2F8;
+}
+#statusbar{
+  height:48px;display:flex;align-items:flex-end;justify-content:space-between;
+  padding:0 28px 6px;flex-shrink:0;z-index:10;position:relative;background:#fff;
+}
+#statusbar .notch{
+  position:absolute;top:0;left:50%;transform:translateX(-50%);
+  width:120px;height:26px;background:#111;border-radius:0 0 18px 18px;
+}
+#content{flex:1;position:relative;overflow:hidden;}
+
+/* Screen base */
+.screen{position:absolute;inset:0;overflow-y:auto;overflow-x:hidden;display:none;flex-direction:column;}
+.screen.active{display:flex;}
+
+/* Utility */
+.grad-text{background:linear-gradient(97deg,#4D4D4D,#BA1E47);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;}
+.serif{font-family:'Cormorant Garamond','Georgia',serif;}
+.btn-main{width:100%;padding:15px 20px;border-radius:16px;border:none;background:linear-gradient(135deg,#6B2060,#BA1E47);color:#fff;font-size:15px;font-weight:700;box-shadow:0 6px 24px rgba(186,30,71,.35);transition:opacity .15s;}
+.btn-main:hover{opacity:.9;}
+.card{background:#fff;border-radius:16px;border:1px solid #EAE6F0;}
+.pill{padding:3px 9px;border-radius:20px;background:#F8E8ED;color:#BA1E47;font-size:10px;font-weight:700;}
+.tag-pill{padding:5px 12px;border-radius:20px;background:#F8E8ED;color:#BA1E47;font-size:11px;font-weight:600;border:1px solid rgba(186,30,71,.2);}
+
+/* Nav */
+#nav{
+  position:absolute;bottom:0;left:0;right:0;height:68px;
+  background:#fff;border-top:1px solid #EAE6F0;
+  display:flex;align-items:center;z-index:20;flex-shrink:0;
+}
+.nav-btn{flex:1;display:flex;flex-direction:column;align-items:center;gap:3px;background:none;border:none;padding:8px 0;font-size:9px;font-weight:400;color:#A09AAD;}
+.nav-btn.active{color:#BA1E47;font-weight:700;}
+.nav-btn span:first-child{font-size:20px;filter:grayscale(1);opacity:.4;}
+.nav-btn.active span:first-child{filter:none;opacity:1;}
+
+/* Progress bar */
+.prog-track{height:4px;background:#EAE6F0;border-radius:2px;overflow:hidden;}
+.prog-fill{height:100%;background:linear-gradient(135deg,#6B2060,#BA1E47);border-radius:2px;transition:width .4s ease;}
+
+/* Toggle */
+.toggle{width:44px;height:24px;border-radius:12px;background:#EAE6F0;position:relative;cursor:pointer;transition:background .2s;flex-shrink:0;border:none;}
+.toggle.on{background:#BA1E47;}
+.toggle::after{content:'';position:absolute;width:18px;height:18px;border-radius:50%;background:white;top:3px;left:3px;transition:left .2s;box-shadow:0 1px 3px rgba(0,0,0,.2);}
+.toggle.on::after{left:23px;}
+
+/* Skeleton anim */
+@keyframes fadeUp{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:translateY(0)}}
+.fade-up{animation:fadeUp .4s ease forwards;}
+
+/* Smooth scroll snap for horizontal lists */
+.hscroll{display:flex;gap:12px;overflow-x:auto;padding-bottom:4px;scrollbar-width:none;}
+.hscroll::-webkit-scrollbar{display:none;}
+
+/* QR blocks */
+.qr-corner{fill:none;stroke:#BA1E47;stroke-width:2.5;}
+.qr-dot{fill:#4D4D4D;}
+.qr-accent{fill:#BA1E47;}
+</style>
+</head>
+<body>
+
+<div id="phone">
+  <!-- Status bar -->
+  <div id="statusbar">
+    <span style="font-size:12px;font-weight:700;color:#1A1625" id="sb-time">9:41</span>
+    <div class="notch"></div>
+    <span style="font-size:11px;color:#A09AAD">●●● 🔋</span>
+  </div>
+
+  <!-- Screens container -->
+  <div id="content">
+
+    <!-- ════════════════════════════════
+         SPLASH
+    ════════════════════════════════ -->
+    <div class="screen active" id="screen-splash">
+      <div style="height:300px;background:linear-gradient(135deg,#6B2060,#BA1E47);display:flex;flex-direction:column;align-items:center;justify-content:center;padding:0 2rem;position:relative;overflow:hidden;flex-shrink:0;">
+        <div style="position:absolute;top:-60px;right:-60px;width:200px;height:200px;border-radius:50%;background:rgba(255,255,255,.07);"></div>
+        <div style="position:absolute;bottom:-40px;left:-40px;width:150px;height:150px;border-radius:50%;background:rgba(255,255,255,.05);"></div>
+        <div style="font-size:56px;margin-bottom:12px;">🐾</div>
+        <h1 class="serif" style="font-size:36px;font-weight:800;color:white;text-align:center;line-height:1.1;margin-bottom:8px;">Quokka</h1>
+        <p style="font-size:14px;color:rgba(255,255,255,.8);text-align:center;line-height:1.6;">Find your tribe. Discover your hobby.<br>2km from you in Bengaluru.</p>
+      </div>
+      <div style="flex:1;padding:1.5rem;overflow-y:auto;">
+        <div id="splash-features"></div>
+        <button class="btn-main" onclick="goTo('signup')" style="margin-top:8px;">Start your journey →</button>
+        <p style="text-align:center;font-size:11px;color:#A09AAD;margin-top:10px;">2,400+ hobbyists in Bengaluru</p>
+      </div>
+    </div>
+
+    <!-- ════════════════════════════════
+         SIGN UP
+    ════════════════════════════════ -->
+    <div class="screen" id="screen-signup">
+      <div style="padding:1.5rem 1.5rem 0;flex-shrink:0;">
+        <div style="display:flex;gap:3px;margin-bottom:18px;">
+          <div style="flex:1;height:3px;border-radius:2px;background:#BA1E47;"></div>
+          <div style="flex:1;height:3px;border-radius:2px;background:#EAE6F0;"></div>
+          <div style="flex:1;height:3px;border-radius:2px;background:#EAE6F0;"></div>
+        </div>
+        <h2 class="serif" style="font-size:26px;font-weight:800;color:#1A1625;margin-bottom:4px;">Create your account</h2>
+        <p style="font-size:13px;color:#6B6478;margin-bottom:20px;">Join Bengaluru's hobby community</p>
+      </div>
+      <div style="flex:1;padding:0 1.5rem;overflow-y:auto;">
+        <input id="inp-name" placeholder="Your first name" style="width:100%;padding:13px 14px;border-radius:12px;border:1.5px solid #EAE6F0;background:#fff;font-size:14px;color:#1A1625;outline:none;margin-bottom:10px;" oninput="this.style.borderColor=this.value?'#BA1E47':'#EAE6F0'"/>
+        <input id="inp-email" placeholder="Email address" type="email" style="width:100%;padding:13px 14px;border-radius:12px;border:1.5px solid #EAE6F0;background:#fff;font-size:14px;color:#1A1625;outline:none;margin-bottom:12px;" oninput="this.style.borderColor=this.value?'#BA1E47':'#EAE6F0'"/>
+        <p style="font-size:12px;color:#6B6478;margin-bottom:8px;font-weight:600;">Your neighbourhood</p>
+        <div id="city-pills" style="display:flex;flex-wrap:wrap;gap:7px;margin-bottom:20px;"></div>
+      </div>
+      <div style="padding:0.75rem 1.5rem 1.5rem;flex-shrink:0;">
+        <button class="btn-main" onclick="doSignup()">Continue →</button>
+      </div>
+    </div>
+
+    <!-- ════════════════════════════════
+         PERSONA QUIZ
+    ════════════════════════════════ -->
+    <div class="screen" id="screen-quiz">
+      <div style="padding:1rem 1.5rem 0;background:#fff;border-bottom:1px solid #EAE6F0;flex-shrink:0;">
+        <div style="display:flex;justify-content:space-between;margin-bottom:8px;">
+          <span style="font-size:11px;color:#A09AAD;font-weight:600;text-transform:uppercase;letter-spacing:.5px;">Persona Finder</span>
+          <span id="quiz-counter" style="font-size:11px;color:#BA1E47;font-weight:700;"></span>
+        </div>
+        <div class="prog-track" style="margin-bottom:12px;"><div class="prog-fill" id="quiz-prog" style="width:20%;"></div></div>
+        <div id="archetype-icons" style="display:flex;justify-content:space-around;padding-bottom:12px;"></div>
+      </div>
+      <div style="flex:1;overflow-y:auto;padding:1.25rem 1.5rem;">
+        <div class="card" style="padding:1.25rem;margin-bottom:20px;box-shadow:0 2px 12px rgba(0,0,0,.06);">
+          <div style="font-size:11px;color:#A09AAD;font-weight:700;text-transform:uppercase;letter-spacing:.5px;margin-bottom:8px;" id="quiz-q-label">Question 1</div>
+          <h3 class="serif" id="quiz-question" style="font-size:20px;font-weight:800;color:#1A1625;line-height:1.35;"></h3>
+        </div>
+        <div id="quiz-options" style="display:flex;flex-direction:column;gap:10px;"></div>
+      </div>
+    </div>
+
+    <!-- ════════════════════════════════
+         HOBBY GENOME RESULT
+    ════════════════════════════════ -->
+    <div class="screen" id="screen-genome" style="background:#0a0810;">
+      <div style="padding:1.5rem 1.5rem 1rem;text-align:center;border-bottom:1px solid rgba(255,255,255,.08);flex-shrink:0;">
+        <div style="font-size:10px;color:rgba(255,255,255,.5);letter-spacing:1.5px;text-transform:uppercase;margin-bottom:8px;">🧬 Know your Hobby Type</div>
+        <h1 class="serif grad-text" style="font-size:34px;font-weight:800;line-height:1.05;margin-bottom:4px;">Hobby<br>Genome</h1>
+      </div>
+      <div style="flex:1;overflow-y:auto;padding:1rem 1.5rem 2rem;">
+        <div style="font-size:10px;color:rgba(255,255,255,.45);letter-spacing:1px;margin-bottom:6px;text-transform:uppercase;">Primary Archetype</div>
+        <div id="genome-primary" style="padding:1.25rem;border-radius:18px;margin-bottom:12px;"></div>
+        <div style="font-size:10px;color:rgba(255,255,255,.45);letter-spacing:1px;margin-bottom:6px;text-transform:uppercase;">Secondary Archetype</div>
+        <div id="genome-secondary" style="padding:12px 14px;border-radius:14px;background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.1);display:flex;gap:12px;align-items:center;margin-bottom:20px;"></div>
+        <div style="font-size:12px;color:rgba(255,255,255,.5);margin-bottom:10px;">Your starter activities — tap to unlock one at a time:</div>
+        <div id="genome-activities" style="display:flex;flex-direction:column;gap:7px;margin-bottom:20px;"></div>
+        <button class="btn-main" onclick="goTo('main')">Explore sessions for me →</button>
+      </div>
+    </div>
+
+    <!-- ════════════════════════════════
+         MAIN (HOME / DISCOVER / MESSAGES / PROFILE)
+    ════════════════════════════════ -->
+    <div class="screen" id="screen-main">
+      <div id="main-content" style="flex:1;overflow-y:auto;padding-bottom:72px;"></div>
+      <nav id="nav">
+        <button class="nav-btn active" id="nav-home" onclick="switchTab('home')"><span>🏠</span>Sessions</button>
+        <button class="nav-btn" id="nav-discover" onclick="switchTab('discover')"><span>💫</span>Discover</button>
+        <button class="nav-btn" id="nav-messages" onclick="switchTab('messages')"><span>💬</span>Messages</button>
+        <button class="nav-btn" id="nav-profile" onclick="switchTab('profile')"><span>🐾</span>Profile</button>
+      </nav>
+    </div>
+
+    <!-- ════════════════════════════════
+         SESSION DETAIL
+    ════════════════════════════════ -->
+    <div class="screen" id="screen-detail">
+      <div id="detail-hero" style="height:230px;position:relative;flex-shrink:0;overflow:hidden;"></div>
+      <div id="detail-tabs" style="display:flex;background:#fff;border-bottom:1px solid #EAE6F0;flex-shrink:0;overflow-x:auto;scrollbar-width:none;"></div>
+      <div id="detail-body" style="flex:1;overflow-y:auto;padding:1.25rem;"></div>
+      <div style="padding:0.75rem 1.25rem 1rem;background:#fff;border-top:1px solid #EAE6F0;flex-shrink:0;">
+        <button class="btn-main" id="detail-cta" onclick="goTo('booking')">Book →</button>
+      </div>
+    </div>
+
+    <!-- ════════════════════════════════
+         HOST PROFILE
+    ════════════════════════════════ -->
+    <div class="screen" id="screen-host">
+      <div id="host-header" style="position:relative;height:140px;flex-shrink:0;overflow:hidden;"></div>
+      <div style="display:flex;flex-direction:column;align-items:center;background:#fff;position:relative;z-index:2;margin-top:-52px;padding-bottom:4px;">
+        <div id="host-avatar-wrap" style="position:relative;margin-bottom:12px;"></div>
+        <h2 id="host-name" class="serif" style="font-size:24px;font-weight:800;color:#1A1625;margin-bottom:4px;"></h2>
+        <div style="display:flex;align-items:center;gap:6px;margin-bottom:10px;">
+          <span style="font-size:13px;font-weight:700;color:#2563EB;">Domain Expert Verified</span>
+          <svg width="16" height="16" viewBox="0 0 24 24"><path d="M12 2L15.09 8.26L22 9.27L17 14.14L18.18 21.02L12 17.77L5.82 21.02L7 14.14L2 9.27L8.91 8.26L12 2Z" fill="#2563EB"/></svg>
+        </div>
+        <p id="host-bio" style="font-size:13px;color:#6B6478;text-align:center;line-height:1.65;max-width:300px;padding:0 20px;margin-bottom:16px;"></p>
+        <div id="host-stats" style="width:100%;display:grid;grid-template-columns:1fr 1fr 1fr;border-top:1px solid #EAE6F0;border-bottom:1px solid #EAE6F0;"></div>
+      </div>
+      <div style="display:flex;border-bottom:1px solid #EAE6F0;flex-shrink:0;background:#fff;">
+        <button class="nav-btn active" id="htab-about" onclick="switchHostTab('about')" style="flex:1;border-bottom:2.5px solid #BA1E47;color:#BA1E47;font-size:12px;font-weight:700;padding:12px 8px;">About</button>
+        <button class="nav-btn" id="htab-portfolio" onclick="switchHostTab('portfolio')" style="flex:1;border-bottom:2.5px solid transparent;color:#A09AAD;font-size:12px;font-weight:500;padding:12px 8px;">Portfolio</button>
+        <button class="nav-btn" id="htab-reviews" onclick="switchHostTab('reviews')" style="flex:1;border-bottom:2.5px solid transparent;color:#A09AAD;font-size:12px;font-weight:500;padding:12px 8px;">Reviews</button>
+      </div>
+      <div id="host-body" style="flex:1;overflow-y:auto;padding:1.25rem;background:#F4F2F8;"></div>
+      <div style="padding:0.75rem 1.25rem 1rem;background:#fff;border-top:1px solid #EAE6F0;flex-shrink:0;">
+        <button class="btn-main" onclick="goTo('booking')">Book a Class</button>
+      </div>
+    </div>
+
+    <!-- ════════════════════════════════
+         BOOKING
+    ════════════════════════════════ -->
+    <div class="screen" id="screen-booking">
+      <div style="padding:1rem 1.25rem;background:#fff;border-bottom:1px solid #EAE6F0;display:flex;align-items:center;gap:12px;flex-shrink:0;">
+        <button onclick="goBack()" style="background:none;border:none;font-size:22px;color:#1A1625;line-height:1;">‹</button>
+        <div><div id="book-title" style="font-size:15px;font-weight:700;color:#1A1625;"></div><div id="book-sub" style="font-size:11px;color:#A09AAD;"></div></div>
+      </div>
+      <div style="flex:1;overflow-y:auto;padding:1.25rem;">
+        <!-- Date -->
+        <div style="margin-bottom:18px;">
+          <div style="font-size:13px;font-weight:700;color:#1A1625;margin-bottom:10px;">Select date</div>
+          <div id="date-picker" style="display:flex;gap:9px;"></div>
+        </div>
+        <!-- Guests -->
+        <div style="margin-bottom:18px;">
+          <div style="font-size:13px;font-weight:700;color:#1A1625;margin-bottom:10px;">Guests</div>
+          <div style="display:flex;align-items:center;gap:16px;padding:12px 16px;background:#fff;border-radius:14px;border:1px solid #EAE6F0;">
+            <button onclick="changeGuests(-1)" style="width:36px;height:36px;border-radius:50%;border:1.5px solid #EAE6F0;background:#F4F2F8;font-size:18px;display:flex;align-items:center;justify-content:center;">−</button>
+            <div style="flex:1;text-align:center;">
+              <span id="guest-count" class="serif grad-text" style="font-size:28px;font-weight:800;">1</span>
+              <div id="guest-label" style="font-size:10px;color:#A09AAD;">person</div>
+            </div>
+            <button onclick="changeGuests(1)" style="width:36px;height:36px;border-radius:50%;border:none;background:linear-gradient(135deg,#6B2060,#BA1E47);font-size:18px;color:white;display:flex;align-items:center;justify-content:center;">+</button>
+          </div>
+          <p id="spots-left" style="font-size:11px;color:#A09AAD;margin-top:5px;text-align:center;"></p>
+        </div>
+        <!-- Summary -->
+        <div id="order-summary" style="background:#fff;border-radius:16px;border:1px solid #EAE6F0;overflow:hidden;margin-bottom:16px;"></div>
+        <!-- Infra -->
+        <div style="padding:11px 13px;background:#F4F2F8;border-radius:12px;border:1px solid #EAE6F0;display:flex;gap:10px;">
+          <span style="font-size:15px;">🤝</span>
+          <div><div style="font-size:12px;font-weight:700;color:#1A1625;">Materials via Peer Lending</div><div style="font-size:11px;color:#6B6478;margin-top:2px;">All equipment provided through Quokka's host network.</div></div>
+        </div>
+      </div>
+      <div style="padding:0.75rem 1.25rem 1rem;background:#fff;border-top:1px solid #EAE6F0;flex-shrink:0;">
+        <button class="btn-main" onclick="goTo('payment')">Proceed to payment →</button>
+      </div>
+    </div>
+
+    <!-- ════════════════════════════════
+         PAYMENT
+    ════════════════════════════════ -->
+    <div class="screen" id="screen-payment">
+      <div style="padding:1rem 1.25rem;background:#fff;border-bottom:1px solid #EAE6F0;display:flex;align-items:center;gap:12px;flex-shrink:0;">
+        <button onclick="goBack()" style="background:none;border:none;font-size:22px;color:#1A1625;line-height:1;">‹</button>
+        <div><div style="font-size:15px;font-weight:700;color:#1A1625;">Secure Payment</div><div id="pay-sub" style="font-size:11px;color:#A09AAD;"></div></div>
+        <div style="margin-left:auto;font-size:11px;color:#2A6035;font-weight:600;">🔒 SSL</div>
+      </div>
+      <div style="flex:1;overflow-y:auto;padding:1.25rem;">
+        <div id="pay-hero" style="background:linear-gradient(135deg,#6B2060,#BA1E47);border-radius:16px;padding:16px;margin-bottom:18px;text-align:center;"></div>
+        <div id="pay-methods" style="display:flex;flex-direction:column;gap:8px;margin-bottom:12px;"></div>
+        <div id="upi-input-wrap" style="margin-bottom:16px;display:none;">
+          <input id="upi-inp" placeholder="yourname@upi" style="width:100%;padding:13px 14px;border-radius:12px;border:1.5px solid #EAE6F0;background:#fff;font-size:14px;color:#1A1625;outline:none;" oninput="this.style.borderColor=this.value?'#BA1E47':'#EAE6F0'"/>
+          <div style="display:flex;gap:6px;margin-top:7px;flex-wrap:wrap;" id="upi-suggestions"></div>
+        </div>
+        <div style="display:flex;gap:12px;padding:10px 14px;background:#F4F2F8;border-radius:12px;border:1px solid #EAE6F0;">
+          <span style="font-size:12px;color:#6B6478;font-weight:600;flex:1;text-align:center;">🔒 Encrypted</span>
+          <span style="font-size:12px;color:#6B6478;font-weight:600;flex:1;text-align:center;">✓ PCI DSS</span>
+          <span style="font-size:12px;color:#6B6478;font-weight:600;flex:1;text-align:center;">↩ Easy refund</span>
+        </div>
+      </div>
+      <div style="padding:0.75rem 1.25rem 1rem;background:#fff;border-top:1px solid #EAE6F0;flex-shrink:0;">
+        <button class="btn-main" id="pay-btn" onclick="doPay()">Pay →</button>
+      </div>
+    </div>
+
+    <!-- ════════════════════════════════
+         CONFIRMATION
+    ════════════════════════════════ -->
+    <div class="screen" id="screen-confirm">
+      <div style="padding:2rem 1.5rem 1rem;background:linear-gradient(135deg,#6B2060,#BA1E47);text-align:center;flex-shrink:0;">
+        <div style="font-size:48px;margin-bottom:10px;">🎉</div>
+        <h2 class="serif" style="font-size:26px;font-weight:800;color:white;margin-bottom:6px;">You're in!</h2>
+        <p id="confirm-subtitle" style="font-size:13px;color:rgba(255,255,255,.85);line-height:1.6;"></p>
+      </div>
+      <div style="flex:1;overflow-y:auto;padding:1.25rem;">
+        <div id="confirm-card" style="background:#fff;border-radius:18px;border:1px solid #EAE6F0;overflow:hidden;margin-bottom:14px;"></div>
+        <div style="font-size:13px;font-weight:700;color:#1A1625;margin-bottom:10px;">What happens next</div>
+        <div id="confirm-next"></div>
+        <button class="btn-main" onclick="goTo('main')" style="margin-top:8px;">Back to sessions 🐾</button>
+      </div>
+    </div>
+
+  </div><!-- /content -->
+</div><!-- /phone -->
+
+<script>
+/* ═══════════════════════════════════════
+   DATA
+═══════════════════════════════════════ */
+const HOSTS = {
+  "Aarav K.":{fullName:"Aarav Kumar",emoji:"🏺",title:"Master Potter & Ceramics Artist",verified:true,bio:"Master potter & ceramicist with 8+ years of experience. Trained at NID Ahmedabad. Passionate about sharing the meditative joy of working with clay — especially with first-timers.",classes:42,students:350,rating:4.9,skill:{label:"Pottery",level:88},location:"Koramangala 4th Block",city:"Bengaluru",tags:["Wheel Throwing","Hand Building","Glazing","Raku Firing"],portfolio:[{label:"Terracotta vase",scene:"linear-gradient(135deg,#8B4513,#D2691E)"},{label:"Wheel session",scene:"linear-gradient(135deg,#5C4033,#A0785A)"},{label:"Raku bowl",scene:"linear-gradient(135deg,#2F1B14,#8B6355)"},{label:"Clay textures",scene:"linear-gradient(135deg,#4A3728,#9C7A6A)"}],reviews:[{name:"Neha K.",badge:"Verified attendee",stars:5,text:"Best creative experience in Bengaluru. Aarav makes even total beginners feel like artists!"},{name:"Raj V.",badge:"Regular",stars:5,text:"My third session — each one better than the last. Small groups, personal attention, stunning results."},{name:"Tanvi D.",badge:"New member",stars:4,text:"Loved the atmosphere in the studio. The clay work is genuinely meditative. Will be back!"}],avatarGrad:"linear-gradient(135deg,#C47840,#8B4513)",headerGrad:"linear-gradient(160deg,#FFCBA4,#FF8C69 35%,#E8622A 60%,#BA1E47)"},
+  "Jai P.":{fullName:"Jai Prasad",emoji:"💻",title:"Creative Technologist & Generative Artist",verified:true,bio:"Creative coder & generative artist with 6 years building visual systems. Alumnus of IIT-B. Runs p5.js and Processing workshops that feel more like art class than coding bootcamp.",classes:28,students:180,rating:4.9,skill:{label:"Creative Coding",level:92},location:"Whitefield",city:"Bengaluru",tags:["p5.js","Generative Art","Live Coding","Music Visualization"],portfolio:[{label:"Particle system",scene:"linear-gradient(135deg,#081222,#3060CC)"},{label:"Generative mandala",scene:"linear-gradient(135deg,#0A0830,#6030A0)"},{label:"Sound viz",scene:"linear-gradient(135deg,#080820,#2040AA)"},{label:"Flow fields",scene:"linear-gradient(135deg,#050B1A,#1A3080)"}],reviews:[{name:"Priya M.",badge:"Verified attendee",stars:5,text:"I came knowing zero coding and left with a working piece of generative art. Mind-blowing session."},{name:"Arjun S.",badge:"Regular",stars:5,text:"Jai has a rare gift — making complex ideas feel playful. The best 2 hours I've spent in months."}],avatarGrad:"linear-gradient(135deg,#3060CC,#1A3080)",headerGrad:"linear-gradient(160deg,#B3CFFF,#6090EE 35%,#3060CC 65%,#1A1080)"},
+  "Priya R.":{fullName:"Priya Raghunathan",emoji:"🥾",title:"Certified Trekking Guide & Trail Leader",verified:true,bio:"Certified mountaineer & trail guide with 200+ hikes led across Karnataka, Tamil Nadu and the Himalayas. Founder of Women Who Hike Bengaluru.",classes:67,students:520,rating:4.8,skill:{label:"Trail Hiking",level:96},location:"Indiranagar",city:"Bengaluru",tags:["Trail Hiking","Nandi Hills","Night Treks","Bouldering"],portfolio:[{label:"Nandi Hills dawn",scene:"linear-gradient(135deg,#081808,#50a855)"},{label:"Trail group",scene:"linear-gradient(135deg,#0A2010,#2A6035)"},{label:"Summit view",scene:"linear-gradient(135deg,#102808,#3A7845)"},{label:"Forest path",scene:"linear-gradient(135deg,#061410,#1A5028)"}],reviews:[{name:"Karan T.",badge:"Verified attendee",stars:5,text:"Priya knows every trail in Karnataka intimately. Safe, fun, and deeply knowledgeable."},{name:"Ananya P.",badge:"Regular",stars:5,text:"Did the Nandi Hills dawn hike — life-changing. Priya's energy at 5am is unreal."},{name:"Dev R.",badge:"New member",stars:4,text:"Super organised, great safety briefing, beautiful route. Already signed up for the next one!"}],avatarGrad:"linear-gradient(135deg,#50a855,#2A6035)",headerGrad:"linear-gradient(160deg,#AEEFC0,#5DC87A 35%,#2A8040 65%,#0A3018)"},
+  "Maya T.":{fullName:"Maya Thakur",emoji:"💃",title:"Latin Dance Instructor & Choreographer",verified:true,bio:"Professional salsa & bachata instructor trained in Cali, Colombia. 9 years of teaching experience. Created HSR Layout's most popular weekend dance social.",classes:118,students:640,rating:4.7,skill:{label:"Latin Dance",level:98},location:"HSR Layout",city:"Bengaluru",tags:["Salsa","Bachata","Cha-Cha","Social Dancing"],portfolio:[{label:"Salsa class",scene:"linear-gradient(135deg,#180818,#cc44cc)"},{label:"Performance",scene:"linear-gradient(135deg,#200830,#9020A0)"},{label:"Bachata",scene:"linear-gradient(135deg,#1A0628,#7830B0)"},{label:"Social night",scene:"linear-gradient(135deg,#140420,#6020A0)"}],reviews:[{name:"Rohan M.",badge:"Regular",stars:5,text:"Maya transforms complete beginners. I had two left feet — now I'm at every social!"},{name:"Sneha K.",badge:"Verified attendee",stars:5,text:"The best dance class in Bengaluru, no contest. Pure joy every single time."}],avatarGrad:"linear-gradient(135deg,#cc44cc,#8020A0)",headerGrad:"linear-gradient(160deg,#F0B8F8,#CC66EE 35%,#9030C0 65%,#500080)"},
+  "Sara M.":{fullName:"Sara Menon",emoji:"🥐",title:"French-Trained Pastry Chef & Baker",verified:true,bio:"Pastry chef trained at Le Cordon Bleu, Paris. 7 years running weekend artisan baking workshops in her Jayanagar flat kitchen. Speciality: sourdough and laminated doughs.",classes:55,students:310,rating:5.0,skill:{label:"Artisan Baking",level:94},location:"Jayanagar",city:"Bengaluru",tags:["Sourdough","Croissants","Brioche","Natural Fermentation"],portfolio:[{label:"Sourdough loaf",scene:"linear-gradient(135deg,#1a0800,#d4804a)"},{label:"Croissant layers",scene:"linear-gradient(135deg,#2A1200,#C07040)"},{label:"Brioche",scene:"linear-gradient(135deg,#180A00,#B06030)"},{label:"Baking session",scene:"linear-gradient(135deg,#200E00,#D09060)"}],reviews:[{name:"Vikram N.",badge:"Verified attendee",stars:5,text:"Made my first croissant from scratch. Sara's patience and technique are extraordinary."},{name:"Meera J.",badge:"Regular",stars:5,text:"I've done 4 sessions — each one teaches me something new and profound about baking."},{name:"Arun T.",badge:"New member",stars:5,text:"Sara is a genuine master. The sourdough I brought home lasted 3 days because I kept eating it!"}],avatarGrad:"linear-gradient(135deg,#D4804A,#8B4020)",headerGrad:"linear-gradient(160deg,#FFD4A0,#FFB070 35%,#E08040 65%,#A04820)"},
+  "Meera S.":{fullName:"Meera Sharma",emoji:"🧘",title:"Certified Yoga Teacher & Wellness Coach",verified:true,bio:"RYT-500 certified yoga teacher with 12 years of practice. Specialises in Yin Yoga and restorative practices. Trained in Mysuru under B.K.S. Iyengar lineage teachers.",classes:89,students:480,rating:4.8,skill:{label:"Yin Yoga",level:97},location:"Banaswadi",city:"Bengaluru",tags:["Yin Yoga","Restorative","Pranayama","Meditation"],portfolio:[{label:"Yin flow",scene:"linear-gradient(135deg,#101818,#40a0a0)"},{label:"Meditation",scene:"linear-gradient(135deg,#0A1414,#306878)"},{label:"Group class",scene:"linear-gradient(135deg,#081210,#285860)"},{label:"Restorative",scene:"linear-gradient(135deg,#0C1616,#386880)"}],reviews:[{name:"Divya K.",badge:"Regular",stars:5,text:"Meera's classes are genuinely healing. I leave every session feeling 10 years younger."},{name:"Rahul P.",badge:"Verified attendee",stars:5,text:"Never done yoga before — Meera made it completely accessible. Pure calm."}],avatarGrad:"linear-gradient(135deg,#40a0a0,#2A6868)",headerGrad:"linear-gradient(160deg,#A0E8E8,#50C0C0 35%,#2A9090 65%,#0A5050)"},
+  "Neha K.":{fullName:"Neha Krishnamurthy",emoji:"📸",title:"Street & Documentary Photographer",verified:true,bio:"Documentary photographer & visual storyteller. Published in National Geographic India, The Hindu, and Mint Lounge. Leads intimate golden-hour street photography walks in old Bengaluru.",classes:31,students:195,rating:4.8,skill:{label:"Street Photography",level:91},location:"Malleshwaram",city:"Bengaluru",tags:["Street Photography","Golden Hour","Documentary","Lightroom Editing"],portfolio:[{label:"Golden hour",scene:"linear-gradient(135deg,#0a0818,#8855bb)"},{label:"Street portrait",scene:"linear-gradient(135deg,#100A20,#6040A0)"},{label:"Architecture",scene:"linear-gradient(135deg,#080618,#5030A0)"},{label:"Market life",scene:"linear-gradient(135deg,#0C0A1C,#7050B0)"}],reviews:[{name:"Ananya R.",badge:"Verified attendee",stars:5,text:"Neha has an incredible eye and teaches you to see the city differently. Magical experience."},{name:"Sanjay M.",badge:"Regular",stars:4,text:"My photography improved more in 2 hours with Neha than 6 months on YouTube."}],avatarGrad:"linear-gradient(135deg,#8855bb,#5030A0)",headerGrad:"linear-gradient(160deg,#D0B0F8,#A070E0 35%,#7040C0 65%,#3A1880)"},
+  "Ravi M.":{fullName:"Ravi Menon",emoji:"🎭",title:"Improv Theatre Director & Storytelling Coach",verified:true,bio:"Improv theatre director trained at Second City, Chicago. Co-founder of Bengaluru Improv Collective. Runs corporate and community workshops on spontaneity, storytelling, and play.",classes:76,students:890,rating:4.9,skill:{label:"Improv Theatre",level:95},location:"Koramangala",city:"Bengaluru",tags:["Improv","Storytelling","Character Work","Long-Form Improv"],portfolio:[{label:"Performance night",scene:"linear-gradient(135deg,#0a1830,#4a90a4)"},{label:"Workshop play",scene:"linear-gradient(135deg,#081422,#3A7890)"},{label:"Group scene",scene:"linear-gradient(135deg,#0C1828,#2A6880)"},{label:"Stage lights",scene:"linear-gradient(135deg,#060E1A,#205070)"}],reviews:[{name:"Kavitha L.",badge:"Regular",stars:5,text:"Ravi creates a space where you forget fear. Laughed more in 2 hours than in months."},{name:"Rohan D.",badge:"Verified attendee",stars:5,text:"Genuinely transformed how I communicate. Ravi is an exceptional facilitator."}],avatarGrad:"linear-gradient(135deg,#4a90a4,#205070)",headerGrad:"linear-gradient(160deg,#A0D4E8,#50A8C8 35%,#2A7898 65%,#0A3850)"}
+};
+
+const ARCHETYPES = {
+  maker:{id:"maker",name:"Quite Maker",icon:"♥",emoji:"🎨",color:"#BA1E47",light:"#F8E8ED",grad:"linear-gradient(135deg,#8B1535,#BA1E47)",tagline:"You find joy in craft and mindful making.",desc:"Calm, creative, introspective. You thrive making things with your hands and expressing through materials.",traits:["Creative","Introspective","Patient","Detail-oriented"],activities:["Doodle a one-line drawing daily","Try calligraphy: one word per day","Press leaves & make a nature card","Mini DIY: decorate a jar","Origami folding — 1 paper a day","Keep a 5-min sketch journal"]},
+  curious:{id:"curious",name:"Curious Mind",icon:"♣",emoji:"🔭",color:"#4D4D4D",light:"#F0F0F0",grad:"linear-gradient(135deg,#2A2A2A,#4D4D4D)",tagline:"You're always exploring and learning.",desc:"Inquisitive, analytical, open to ideas. You love learning through experimentation and discovery.",traits:["Inquisitive","Analytical","Open-minded","Strategic"],activities:["Try a short online brain teaser/quiz","Learn one fun TikTok/Zumba step each week","Read 2 pages of a random book daily","Record a 30-sec voice note check-in","Solve a mini crossword/sudoku","Explore one Wikipedia rabbit hole"]},
+  action:{id:"action",name:"Action Seeker",icon:"♠",emoji:"⚡",color:"#E85A1E",light:"#FDF0EA",grad:"linear-gradient(135deg,#A03010,#E85A1E)",tagline:"You love movement, challenge and energy.",desc:"Dynamic, driven, physically expressive. You seek adrenaline, challenge, and movement-based experiences.",traits:["Energetic","Goal-driven","Adventurous","Disciplined"],activities:["Try skipping rope for 100 jumps","5-min dance challenges (trad or freestyle)","Badminton/shuttle drills","Play a one-round card game daily","Juggle 2–3 objects","Practice a yoga balance pose daily"]},
+  social:{id:"social",name:"Social Spark",icon:"◆",emoji:"✨",color:"#1E8BA8",light:"#E8F6FA",grad:"linear-gradient(135deg,#0F5068,#1E8BA8)",tagline:"You energise people and shine in groups.",desc:"Outgoing, expressive, performance-oriented. You love connecting, performing, and creating shared experiences.",traits:["Outgoing","Expressive","Collaborative","Entertaining"],activities:["Try a one-song karaoke with friends","Host a 2-min story circle","Organise a mini potluck","Exchange doodle notes with a buddy","Learn 1 new word in fact daily","Play a board game with 2–3 people"]}
+};
+
+const SESSIONS = [
+  {id:1,title:"Wheel Throwing",sub:"Pottery for beginners",host:"Aarav K.",city:"Koramangala",dist:"1.2km",time:"Sat 10am–12pm",price:650,spots:3,rating:4.9,arc:"maker",scene:"linear-gradient(135deg,#2d1b00,#c47840)",tag:"Craft",date:"24 MAY"},
+  {id:2,title:"Generative Art",sub:"p5.js creative coding",host:"Jai P.",city:"Whitefield",dist:"2km",time:"Fri 7–9:30pm",price:500,spots:5,rating:4.9,arc:"curious",scene:"linear-gradient(135deg,#081222,#3060CC)",tag:"Digital",date:"23 MAY"},
+  {id:3,title:"Dawn Hike",sub:"Nandi Hills trail",host:"Priya R.",city:"Indiranagar",dist:"0.8km",time:"Sun 6–9am",price:350,spots:4,rating:4.8,arc:"action",scene:"linear-gradient(135deg,#081808,#50a855)",tag:"Outdoors",date:"25 MAY"},
+  {id:4,title:"Salsa Social",sub:"Dance for all levels",host:"Maya T.",city:"HSR Layout",dist:"0.6km",time:"Wed 7–9pm",price:400,spots:6,rating:4.7,arc:"social",scene:"linear-gradient(135deg,#180818,#cc44cc)",tag:"Dance",date:"21 MAY"},
+  {id:5,title:"Sourdough Sunday",sub:"Artisan baking class",host:"Sara M.",city:"Jayanagar",dist:"1.6km",time:"Sat 9–11:30am",price:800,spots:2,rating:5.0,arc:"maker",scene:"linear-gradient(135deg,#1a0800,#d4804a)",tag:"Food",date:"24 MAY"},
+  {id:6,title:"Yin Yoga Flow",sub:"Restorative evening",host:"Meera S.",city:"Banaswadi",dist:"1.1km",time:"Thu 6:30–8pm",price:300,spots:8,rating:4.8,arc:"action",scene:"linear-gradient(135deg,#101818,#40a0a0)",tag:"Wellness",date:"22 MAY"},
+  {id:7,title:"Photography Walk",sub:"Golden hour streets",host:"Neha K.",city:"Malleshwaram",dist:"1.4km",time:"Sun 5–7pm",price:400,spots:5,rating:4.8,arc:"curious",scene:"linear-gradient(135deg,#0a0818,#8855bb)",tag:"Photo",date:"25 MAY"},
+  {id:8,title:"Improv Night",sub:"Storytelling & play",host:"Ravi M.",city:"Koramangala",dist:"0.9km",time:"Sat 6–8pm",price:450,spots:7,rating:4.9,arc:"social",scene:"linear-gradient(135deg,#0a1830,#4a90a4)",tag:"Theatre",date:"24 MAY"}
+];
+
+const QUIZ = [
+  {q:"It's a free Saturday — what sounds most appealing?",opts:[{l:"Trying a new craft or making something",a:"maker"},{l:"Going down a rabbit hole learning something new",a:"curious"},{l:"Getting out and being physically active",a:"action"},{l:"Calling friends and making plans together",a:"social"}]},
+  {q:"When you're stressed, you tend to...",opts:[{l:"Draw, journal, or create something",a:"maker"},{l:"Read, watch a documentary, or solve puzzles",a:"curious"},{l:"Go for a run, dance, or do yoga",a:"action"},{l:"Talk it through with someone close",a:"social"}]},
+  {q:"What describes how you prefer to spend energy?",opts:[{l:"Patiently crafting something beautiful",a:"maker"},{l:"Exploring ideas and experimenting",a:"curious"},{l:"Pushing my body and testing my limits",a:"action"},{l:"Energising a room and bringing people together",a:"social"}]},
+  {q:"Which session would excite you most?",opts:[{l:"A quiet ceramics or painting workshop",a:"maker"},{l:"A photography walk or coding workshop",a:"curious"},{l:"A hiking trail or dance class",a:"action"},{l:"An improv night or open-mic event",a:"social"}]},
+  {q:"You feel most satisfied when...",opts:[{l:"You've made something you can touch and keep",a:"maker"},{l:"You've understood something deeply",a:"curious"},{l:"You've pushed past a physical challenge",a:"action"},{l:"You've made others laugh or feel something",a:"social"}]}
+];
+
+/* ═══════════════════════════════════════
+   STATE
+═══════════════════════════════════════ */
+let state = {
+  screen:'splash', prevScreen:'splash',
+  user:null, genome:null,
+  quizStep:0, quizScores:{maker:0,curious:0,action:0,social:0},
+  actStep:0,
+  tab:'home',
+  session:null,
+  guests:1, selectedDate:0,
+  payMethod:'upi',
+  booking:null,
+  hostTab:'about', currentHostKey:null,
+  detailTab:'info',
+  catFilter:'All'
+};
+
+/* ═══════════════════════════════════════
+   ROUTING
+═══════════════════════════════════════ */
+function goTo(screen) {
+  state.prevScreen = state.screen;
+  // hide all screens
+  document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
+  document.getElementById('screen-'+screen).classList.add('active');
+  state.screen = screen;
+
+  // update status bar bg
+  const sb = document.getElementById('statusbar');
+  const sbTime = document.getElementById('sb-time');
+  if(screen==='genome'){
+    sb.style.background='rgba(0,0,0,.3)';
+    sbTime.style.color='white';
+    document.getElementById('phone').style.background='#0a0810';
+  } else {
+    sb.style.background='#fff';
+    sbTime.style.color='#1A1625';
+    document.getElementById('phone').style.background='#F4F2F8';
+  }
+
+  // render content
+  const renders = {
+    splash: renderSplash, signup: renderSignup, quiz: renderQuiz,
+    genome: renderGenome, main: renderMain, detail: renderDetail,
+    host: renderHostProfile, booking: renderBooking,
+    payment: renderPayment, confirm: renderConfirmation
+  };
+  if(renders[screen]) renders[screen]();
+}
+
+function goBack() {
+  const backMap = {
+    host:'detail', detail:'main', booking:'detail',
+    payment:'booking', signup:'splash', quiz:'signup',
+    genome:'quiz'
+  };
+  goTo(backMap[state.screen] || 'main');
+}
+
+/* ═══════════════════════════════════════
+   SPLASH
+═══════════════════════════════════════ */
+function renderSplash(){
+  const feats=[
+    {e:"🧬",t:"Hobby DNA Test",d:"4 archetypes. Your personalised session genome."},
+    {e:"📍",t:"2km Matchmaking",d:"Domain Expert Verified hosts near you."},
+    {e:"🏅",t:"Community Badges",d:"Earn credibility through peer-rated sessions."},
+    {e:"📱",t:"QR Check-in & Chat",d:"Seamless session entry with in-app messaging."}
+  ];
+  document.getElementById('splash-features').innerHTML = feats.map(f=>`
+    <div style="display:flex;gap:14px;align-items:flex-start;margin-bottom:18px;">
+      <div style="width:44px;height:44px;border-radius:14px;background:#F8E8ED;display:flex;align-items:center;justify-content:center;font-size:20px;flex-shrink:0;">${f.e}</div>
+      <div><div style="font-size:14px;font-weight:700;color:#1A1625;">${f.t}</div><div style="font-size:12px;color:#6B6478;margin-top:2px;line-height:1.5;">${f.d}</div></div>
+    </div>`).join('');
+}
+
+/* ═══════════════════════════════════════
+   SIGN UP
+═══════════════════════════════════════ */
+const CITIES = ["Koramangala","Indiranagar","HSR Layout","Jayanagar","Whitefield","Banaswadi","Malleshwaram"];
+let selectedCity = '';
+function renderSignup(){
+  selectedCity='';
+  document.getElementById('city-pills').innerHTML = CITIES.map(c=>`
+    <button onclick="selectCity('${c}')" id="city-${c.replace(/ /g,'_')}" style="padding:6px 13px;border-radius:20px;border:1.5px solid #EAE6F0;background:#fff;color:#6B6478;font-size:11px;font-weight:600;transition:all .15s;">${c}</button>`).join('');
+}
+function selectCity(c){
+  selectedCity=c;
+  CITIES.forEach(ci=>{
+    const btn=document.getElementById('city-'+ci.replace(/ /g,'_'));
+    if(btn){btn.style.borderColor=ci===c?'#BA1E47':'#EAE6F0';btn.style.background=ci===c?'#F8E8ED':'#fff';btn.style.color=ci===c?'#BA1E47':'#6B6478';}
+  });
+}
+function doSignup(){
+  const name=document.getElementById('inp-name').value.trim();
+  const email=document.getElementById('inp-email').value.trim();
+  if(!name||!email||!selectedCity){alert('Please fill in all fields and select your neighbourhood.');return;}
+  state.user={name,email,city:selectedCity};
+  state.quizStep=0; state.quizScores={maker:0,curious:0,action:0,social:0};
+  goTo('quiz');
+}
+
+/* ═══════════════════════════════════════
+   QUIZ
+═══════════════════════════════════════ */
+function renderQuiz(){
+  const q=QUIZ[state.quizStep];
+  document.getElementById('quiz-counter').textContent=`${state.quizStep+1} of ${QUIZ.length}`;
+  document.getElementById('quiz-q-label').textContent=`Question ${state.quizStep+1}`;
+  document.getElementById('quiz-question').textContent=q.q;
+  document.getElementById('quiz-prog').style.width=`${((state.quizStep+1)/QUIZ.length)*100}%`;
+
+  // Archetype icons
+  document.getElementById('archetype-icons').innerHTML=Object.values(ARCHETYPES).map(a=>`
+    <div style="text-align:center;opacity:${state.quizScores[a.id]>0?1:.3};transition:opacity .3s;">
+      <div style="font-size:16px;color:${a.color};">${a.icon}</div>
+      <div style="font-size:8px;color:#A09AAD;margin-top:1px;">${a.name.split(' ')[0]}</div>
+    </div>`).join('');
+
+  // Options
+  document.getElementById('quiz-options').innerHTML=q.opts.map((o,i)=>{
+    const arc=ARCHETYPES[o.a];
+    return `<button onclick="pickOption('${o.a}')"
+      style="padding:14px 16px;border-radius:14px;border:1.5px solid #EAE6F0;background:#fff;display:flex;align-items:center;gap:12px;text-align:left;width:100%;transition:all .15s;"
+      onmouseover="this.style.borderColor='${arc.color}';this.style.background='${arc.light}'"
+      onmouseout="this.style.borderColor='#EAE6F0';this.style.background='#fff'">
+      <div style="width:36px;height:36px;border-radius:12px;background:${arc.light};color:${arc.color};display:flex;align-items:center;justify-content:center;font-size:18px;font-weight:800;flex-shrink:0;">${arc.icon}</div>
+      <span style="font-size:13px;color:#1A1625;line-height:1.45;font-weight:500;">${o.l}</span>
+    </button>`;
+  }).join('');
+}
+function pickOption(arc){
+  state.quizScores[arc]++;
+  if(state.quizStep<QUIZ.length-1){
+    state.quizStep++;
+    renderQuiz();
+  } else {
+    const sorted=Object.entries(state.quizScores).sort((a,b)=>b[1]-a[1]);
+    state.genome={primary:sorted[0][0],secondary:sorted[1][0],scores:state.quizScores};
+    state.actStep=0;
+    goTo('genome');
+  }
+}
+
+/* ═══════════════════════════════════════
+   GENOME
+═══════════════════════════════════════ */
+function renderGenome(){
+  const p=ARCHETYPES[state.genome.primary];
+  const s=ARCHETYPES[state.genome.secondary];
+
+  document.getElementById('genome-primary').style.cssText=`padding:1.25rem;border-radius:18px;background:linear-gradient(135deg,${p.color}26,rgba(77,77,77,.1));border:1px solid ${p.color}44;margin-bottom:12px;`;
+  document.getElementById('genome-primary').innerHTML=`
+    <div style="display:flex;gap:14px;align-items:center;margin-bottom:10px;">
+      <div style="width:52px;height:52px;border-radius:16px;background:${p.grad};display:flex;align-items:center;justify-content:center;font-size:22px;color:white;font-weight:800;box-shadow:0 4px 16px ${p.color}55;">${p.icon}</div>
+      <div>
+        <div class="serif" style="font-size:18px;font-weight:800;color:white;">${p.name}</div>
+        <div style="font-size:12px;color:rgba(255,255,255,.6);margin-top:2px;">${p.tagline}</div>
+      </div>
+    </div>
+    <p style="font-size:12px;color:rgba(255,255,255,.65);line-height:1.65;margin-bottom:10px;">${p.desc}</p>
+    <div style="display:flex;flex-wrap:wrap;gap:6px;">${p.traits.map(t=>`<span style="padding:3px 10px;border-radius:20px;background:${p.color}22;color:${p.color};font-size:10px;font-weight:700;border:1px solid ${p.color}44;">${t}</span>`).join('')}</div>`;
+
+  document.getElementById('genome-secondary').innerHTML=`
+    <div style="width:38px;height:38px;border-radius:12px;background:${s.grad};display:flex;align-items:center;justify-content:center;font-size:16px;color:white;font-weight:800;flex-shrink:0;">${s.icon}</div>
+    <div>
+      <div style="font-size:14px;font-weight:700;color:white;">${s.name}</div>
+      <div style="font-size:11px;color:rgba(255,255,255,.5);">${s.tagline}</div>
+    </div>`;
+
+  renderActivities();
+}
+function renderActivities(){
+  const p=ARCHETYPES[state.genome.primary];
+  document.getElementById('genome-activities').innerHTML=p.activities.map((act,i)=>{
+    const unlocked=i<=state.actStep;
+    return `<button onclick="unlockActivity(${i})"
+      style="padding:10px 14px;border-radius:12px;background:${unlocked?p.color+'18':'rgba(255,255,255,.03)'};border:1px solid ${unlocked?p.color+'44':'rgba(255,255,255,.06)'};display:flex;align-items:center;gap:10px;opacity:${unlocked?1:.4};transition:all .3s;text-align:left;width:100%;">
+      <div style="width:22px;height:22px;border-radius:50%;background:${unlocked?p.color:'rgba(255,255,255,.08)'};display:flex;align-items:center;justify-content:center;font-size:10px;color:white;font-weight:700;flex-shrink:0;">${unlocked?'✓':i+1}</div>
+      <span style="font-size:12px;color:${unlocked?'white':'rgba(255,255,255,.4)'};">${act}</span>
+      ${i===state.actStep?`<span style="margin-left:auto;font-size:10px;color:${p.color};font-weight:600;">Tap →</span>`:''}
+    </button>`;
+  }).join('');
+}
+function unlockActivity(i){
+  if(i===state.actStep) state.actStep=Math.min(state.actStep+1,ARCHETYPES[state.genome.primary].activities.length-1);
+  renderActivities();
+}
+
+/* ═══════════════════════════════════════
+   MAIN
+═══════════════════════════════════════ */
+function switchTab(tab){
+  state.tab=tab;
+  ['home','discover','messages','profile'].forEach(t=>{
+    document.getElementById('nav-'+t).classList.toggle('active',t===tab);
+  });
+  renderMain();
+}
+function renderMain(){
+  const c=document.getElementById('main-content');
+  const renders={home:renderHome,discover:renderDiscover,messages:renderMessages,profile:renderProfile};
+  if(renders[state.tab]) renders[state.tab](c);
+  else c.innerHTML='';
+}
+
+/* HOME */
+function renderHome(c){
+  const user=state.user; const g=state.genome;
+  const p=ARCHETYPES[g.primary];
+  const matched=SESSIONS.filter(s=>s.arc===g.primary).slice(0,2);
+  const cats=['All','Craft','Outdoors','Digital','Dance','Food','Wellness','Photo','Theatre'];
+  const filtered=state.catFilter==='All'?SESSIONS:SESSIONS.filter(s=>s.tag===state.catFilter);
+
+  c.innerHTML=`
+    <div style="padding:1rem 1.25rem 0;background:#F4F2F8;">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;">
+        <div>
+          <p style="font-size:11px;color:#A09AAD;margin-bottom:1px;text-transform:uppercase;letter-spacing:.5px;font-weight:600;">Good morning</p>
+          <h2 class="serif grad-text" style="font-size:22px;font-weight:800;">${user.name} 👋</h2>
+        </div>
+        <div style="width:40px;height:40px;border-radius:50%;background:linear-gradient(135deg,#6B2060,#BA1E47);color:white;font-weight:800;font-size:15px;display:flex;align-items:center;justify-content:center;box-shadow:0 3px 12px rgba(186,30,71,.55);">${user.name[0]}</div>
+      </div>
+      <div style="display:flex;align-items:center;gap:8px;padding:9px 12px;background:#fff;border-radius:12px;border:1px solid #EAE6F0;margin-bottom:12px;">
+        <span style="font-size:13px;">📍</span>
+        <span style="font-size:12px;color:#6B6478;flex:1;">${user.city} · <span style="color:#2A6035;font-weight:700;">2km radius active</span></span>
+        <span style="padding:2px 8px;border-radius:20px;background:${p.light};color:${p.color};font-size:10px;font-weight:700;">${p.icon} ${p.name}</span>
+      </div>
+    </div>
+    <div style="padding:0 1.25rem;margin-bottom:6px;">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;">
+        <span class="serif" style="font-size:15px;font-weight:700;color:#1A1625;">✦ Matched for you</span>
+        <span class="grad-text" style="font-size:11px;font-weight:700;cursor:pointer;">See all →</span>
+      </div>
+    </div>
+    <div class="hscroll" style="padding:0 1.25rem 18px;">
+      ${matched.map(s=>bigCard(s,g)).join('')}
+      <div onclick="goTo('quiz')" style="background:linear-gradient(135deg,#6B2060,#BA1E47);border-radius:20px;flex-shrink:0;width:60%;cursor:pointer;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:1.25rem;text-align:center;">
+        <div style="font-size:28px;margin-bottom:8px;">🧬</div>
+        <div class="serif" style="font-size:13px;font-weight:800;color:white;margin-bottom:4px;">Retake Hobby<br>DNA Test</div>
+        <div style="font-size:10px;color:rgba(255,255,255,.75);">Refine your genome</div>
+      </div>
+    </div>
+    <div style="padding:0 1.25rem;">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;">
+        <span class="serif" style="font-size:15px;font-weight:700;color:#1A1625;">All sessions</span>
+        <span class="grad-text" style="font-size:11px;font-weight:700;cursor:pointer;">See all →</span>
+      </div>
+      <div class="hscroll" style="margin-bottom:12px;">
+        ${cats.map(cat=>`<button onclick="setFilter('${cat}')" style="padding:5px 12px;border-radius:20px;border:1.5px solid ${state.catFilter===cat?'#BA1E47':'#EAE6F0'};background:${state.catFilter===cat?'#BA1E47':'#fff'};color:${state.catFilter===cat?'#fff':'#6B6478'};font-size:11px;font-weight:600;white-space:nowrap;transition:all .15s;">${cat}</button>`).join('')}
+      </div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;padding-bottom:16px;">
+        ${filtered.map(s=>smallCard(s,g)).join('')}
+      </div>
+    </div>`;
+}
+function setFilter(cat){ state.catFilter=cat; renderMain(); }
+
+function bigCard(s,g){
+  const h=HOSTS[s.host]; const p=ARCHETYPES[g.primary];
+  return `<div onclick="openSession(${s.id})" style="background:#fff;border-radius:20px;overflow:hidden;cursor:pointer;flex-shrink:0;width:78%;border:1px solid #EAE6F0;">
+    <div style="height:155px;background:${s.scene};position:relative;overflow:hidden;">
+      <div style="position:absolute;inset:0;background:linear-gradient(to bottom,transparent 40%,rgba(0,0,0,.38));"></div>
+      <div style="position:absolute;top:10px;left:10px;background:rgba(255,255,255,.92);backdrop-filter:blur(8px);border-radius:9px;padding:5px 9px;text-align:center;">
+        <div class="serif grad-text" style="font-size:16px;font-weight:800;line-height:1;">${s.date.split(' ')[0]}</div>
+        <div style="font-size:8px;font-weight:700;color:#BA1E47;letter-spacing:.5px;">${s.date.split(' ')[1]}</div>
+      </div>
+      ${s.arc===g.primary?`<div style="position:absolute;top:10px;right:10px;padding:3px 8px;border-radius:20px;background:${p.color};color:white;font-size:9px;font-weight:700;">✦ Your type</div>`:''}
+      <div style="position:absolute;bottom:8px;left:10px;font-size:9px;color:rgba(255,255,255,.8);">📍 ${s.city}</div>
+    </div>
+    <div style="padding:12px 14px 14px;">
+      <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:3px;">
+        <h3 class="serif" style="font-size:15px;font-weight:700;color:#1A1625;line-height:1.2;">${s.title}</h3>
+        <div class="serif grad-text" style="font-size:14px;font-weight:800;flex-shrink:0;margin-left:8px;">₹${s.price}</div>
+      </div>
+      <p style="font-size:11px;color:#6B6478;margin-bottom:8px;">${s.sub} · 🕐 ${s.time}</p>
+      <div style="display:flex;align-items:center;gap:6px;margin-bottom:10px;">
+        <div style="width:20px;height:20px;border-radius:50%;background:${h?h.avatarGrad:'#F8E8ED'};display:flex;align-items:center;justify-content:center;font-size:10px;">${h?h.emoji:'👤'}</div>
+        <span style="font-size:11px;color:#6B6478;font-weight:500;">${h?h.fullName:s.host}</span>
+        <div style="width:12px;height:12px;border-radius:50%;background:#2563EB;display:flex;align-items:center;justify-content:center;margin-left:2px;flex-shrink:0;">
+          <svg width="6" height="4" viewBox="0 0 6 4"><path d="M0.5 2l1.5 1.5L5.5 0.5" stroke="white" stroke-width="1.5" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        </div>
+      </div>
+      <div style="display:flex;justify-content:space-between;align-items:center;">
+        <span style="font-size:11px;color:#A09AAD;">⭐ ${s.rating} · ${s.spots} spots</span>
+        <div style="padding:7px 16px;border-radius:20px;background:linear-gradient(135deg,#6B2060,#BA1E47);color:white;font-size:12px;font-weight:700;">Join</div>
+      </div>
+    </div>
+  </div>`;
+}
+
+function smallCard(s,g){
+  const h=HOSTS[s.host];
+  return `<div onclick="openSession(${s.id})" style="background:#fff;border-radius:16px;overflow:hidden;cursor:pointer;border:1px solid #EAE6F0;">
+    <div style="height:108px;background:${s.scene};position:relative;overflow:hidden;">
+      <div style="position:absolute;inset:0;background:linear-gradient(to bottom,transparent 40%,rgba(0,0,0,.38));"></div>
+      <div style="position:absolute;top:10px;left:10px;background:rgba(255,255,255,.92);backdrop-filter:blur(8px);border-radius:9px;padding:5px 9px;text-align:center;">
+        <div class="serif grad-text" style="font-size:13px;font-weight:800;line-height:1;">${s.date.split(' ')[0]}</div>
+        <div style="font-size:8px;font-weight:700;color:#BA1E47;letter-spacing:.5px;">${s.date.split(' ')[1]}</div>
+      </div>
+    </div>
+    <div style="padding:10px 11px 12px;">
+      <h3 class="serif" style="font-size:13px;font-weight:700;color:#1A1625;line-height:1.2;margin-bottom:2px;">${s.title}</h3>
+      <div style="display:flex;align-items:center;gap:4px;margin-bottom:6px;">
+        <div style="width:16px;height:16px;border-radius:50%;background:${h?h.avatarGrad:'#F8E8ED'};display:flex;align-items:center;justify-content:center;font-size:8px;">${h?h.emoji:'👤'}</div>
+        <span style="font-size:9px;color:#6B6478;">${s.host}</span>
+        <div style="width:10px;height:10px;border-radius:50%;background:#2563EB;display:flex;align-items:center;justify-content:center;">
+          <svg width="5" height="4" viewBox="0 0 5 4"><path d="M0.5 2l1.5 1.5L4.5 0.5" stroke="white" stroke-width="1.5" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        </div>
+      </div>
+      <div style="display:flex;justify-content:space-between;align-items:center;">
+        <span class="grad-text" style="font-size:10px;font-weight:700;">₹${s.price}</span>
+        <span style="font-size:9px;color:#A09AAD;padding:2px 6px;border-radius:20px;border:1px solid #EAE6F0;">📍${s.dist}</span>
+      </div>
+    </div>
+  </div>`;
+}
+
+/* DISCOVER */
+function renderDiscover(c){
+  const g=state.genome; const p=ARCHETYPES[g.primary];
+  const matched=SESSIONS.filter(s=>s.arc===g.primary);
+  c.innerHTML=`
+    <div style="padding:1.25rem 1.25rem 0;">
+      <h2 class="serif grad-text" style="font-size:24px;font-weight:800;margin-bottom:4px;">Discover Hosts</h2>
+      <p style="font-size:12px;color:#A09AAD;margin-bottom:16px;">Matched to your ${p.name} DNA</p>
+      ${matched.map(s=>{
+        const h=HOSTS[s.host];
+        return `<button onclick="openSession(${s.id})" style="width:100%;background:#fff;border:1px solid #EAE6F0;border-radius:16px;padding:14px;margin-bottom:10px;cursor:pointer;display:flex;gap:12px;text-align:left;">
+          <div style="width:52px;height:52px;border-radius:14px;background:${s.scene};display:flex;align-items:center;justify-content:center;font-size:22px;flex-shrink:0;">${h?h.emoji:'👤'}</div>
+          <div style="flex:1;">
+            <div style="display:flex;align-items:center;gap:6px;margin-bottom:2px;">
+              <div style="font-size:14px;font-weight:700;color:#1A1625;">${s.title}</div>
+              <div style="width:14px;height:14px;border-radius:50%;background:#2563EB;display:flex;align-items:center;justify-content:center;flex-shrink:0;">
+                <svg width="7" height="5" viewBox="0 0 7 5"><path d="M0.5 2.5l2 2L6.5 0.5" stroke="white" stroke-width="1.5" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg>
+              </div>
+            </div>
+            <div style="font-size:11px;color:#6B6478;">${h?h.fullName:s.host} · ${s.city}</div>
+            <div style="display:flex;gap:6px;margin-top:6px;">
+              <span class="grad-text" style="font-size:10px;font-weight:700;">₹${s.price}</span>
+              <span style="font-size:10px;color:#A09AAD;">📍${s.dist}</span>
+              <span style="font-size:10px;color:#A09AAD;">⭐${s.rating}</span>
+            </div>
+          </div>
+        </button>`;
+      }).join('')}
+    </div>`;
+}
+
+/* MESSAGES */
+let chatMsgs=[{from:"them",t:"Hey! Booking confirmed — so excited to have you 🎉",time:"10:02 AM"},{from:"them",t:"Studio: 14B, 5th Cross, Koramangala 4th Block. Buzzer: 'Clay Room'.",time:"10:03 AM"},{from:"me",t:"Perfect! Do I need to bring anything?",time:"10:08 AM"},{from:"them",t:"Just yourself and old clothes. Clay, aprons, tools — all here. See you Saturday!",time:"10:10 AM"}];
+let msgTab='chat';
+function renderMessages(c){
+  c.innerHTML=`
+    <div style="padding:1rem 1.25rem 0.5rem;background:#fff;border-bottom:1px solid #EAE6F0;">
+      <h2 class="serif grad-text" style="font-size:20px;font-weight:800;margin-bottom:8px;">Messages & QR</h2>
+      <div style="display:flex;gap:6px;margin-bottom:4px;">
+        <button onclick="setMsgTab('chat')" id="msgtab-chat" style="flex:1;padding:7px;border-radius:20px;border:1.5px solid ${msgTab==='chat'?'#BA1E47':'#EAE6F0'};background:${msgTab==='chat'?'#F8E8ED':'#fff'};color:${msgTab==='chat'?'#BA1E47':'#6B6478'};font-size:11px;font-weight:700;">💬 Chat</button>
+        <button onclick="setMsgTab('qr')" id="msgtab-qr" style="flex:1;padding:7px;border-radius:20px;border:1.5px solid ${msgTab==='qr'?'#BA1E47':'#EAE6F0'};background:${msgTab==='qr'?'#F8E8ED':'#fff'};color:${msgTab==='qr'?'#BA1E47':'#6B6478'};font-size:11px;font-weight:700;">📱 QR</button>
+      </div>
+    </div>
+    <div id="msg-body" style="flex:1;display:flex;flex-direction:column;"></div>`;
+  renderMsgBody();
+}
+function setMsgTab(t){ msgTab=t; renderMessages(document.getElementById('main-content')); }
+function renderMsgBody(){
+  const c=document.getElementById('msg-body');
+  if(!c) return;
+  const h=HOSTS["Aarav K."];
+  if(msgTab==='chat'){
+    c.innerHTML=`
+      <div style="padding:0.5rem 1.25rem;background:#fff;border-bottom:1px solid #EAE6F0;display:flex;align-items:center;gap:10px;">
+        <div style="width:34px;height:34px;border-radius:50%;background:${h.avatarGrad};display:flex;align-items:center;justify-content:center;font-size:14px;">${h.emoji}</div>
+        <div style="flex:1;"><div style="font-size:13px;font-weight:700;color:#1A1625;">Aarav Kumar · Wheel Throwing</div><div style="font-size:10px;color:#2A6035;">● Active now · Koramangala</div></div>
+      </div>
+      <div id="chat-msgs" style="flex:1;overflow-y:auto;padding:0.75rem 1.25rem;display:flex;flex-direction:column;gap:9px;">
+        ${chatMsgs.map(m=>`
+          <div style="display:flex;flex-direction:column;align-items:${m.from==='me'?'flex-end':'flex-start'};">
+            <div style="max-width:78%;padding:10px 13px;border-radius:${m.from==='me'?'14px 4px 14px 14px':'4px 14px 14px 14px'};background:${m.from==='me'?'linear-gradient(135deg,#6B2060,#BA1E47)':'#fff'};color:${m.from==='me'?'white':'#1A1625'};font-size:13px;line-height:1.55;border:${m.from==='me'?'none':'1px solid #EAE6F0'};">
+              ${m.t}<div style="font-size:9px;margin-top:3px;opacity:.6;text-align:${m.from==='me'?'right':'left'};">${m.time}</div>
+            </div>
+          </div>`).join('')}
+      </div>
+      <div style="padding:0.75rem 1rem;background:#fff;border-top:1px solid #EAE6F0;display:flex;gap:8px;">
+        <input id="chat-input" placeholder="Type a message…" onkeydown="if(event.key==='Enter')sendMsg()" style="flex:1;padding:10px 13px;border-radius:22px;border:1px solid #EAE6F0;background:#F4F2F8;font-size:13px;color:#1A1625;outline:none;"/>
+        <button onclick="sendMsg()" style="width:38px;height:38px;border-radius:50%;background:linear-gradient(135deg,#6B2060,#BA1E47);color:white;border:none;font-size:17px;display:flex;align-items:center;justify-content:center;flex-shrink:0;">↑</button>
+      </div>`;
+  } else {
+    c.innerHTML=`
+      <div style="flex:1;overflow-y:auto;padding:1.25rem;display:flex;flex-direction:column;gap:12px;">
+        <div style="background:#fff;border-radius:16px;padding:20px;display:flex;flex-direction:column;align-items:center;">
+          <div style="padding:12px;background:#F4F2F8;border-radius:14px;margin-bottom:12px;">
+            ${qrSVG(130)}
+          </div>
+          <div class="serif" style="font-size:17px;font-weight:800;color:#1A1625;margin-bottom:3px;">Wheel Throwing · 24 MAY</div>
+          <div style="font-size:12px;color:#6B6478;margin-bottom:12px;">Aarav Kumar · Koramangala Studio</div>
+          <div style="padding:7px 20px;border-radius:20px;background:linear-gradient(135deg,#6B2060,#BA1E47);color:white;font-size:12px;font-weight:700;">Scan at session start</div>
+        </div>
+        <div style="padding:13px 14px;background:#fff;border-radius:14px;border:1px solid #EAE6F0;display:flex;gap:10px;">
+          <span style="font-size:18px;">🤝</span>
+          <div><div style="font-size:13px;font-weight:700;color:#1A1625;">Materials via Peer Lending</div><p style="font-size:11px;color:#6B6478;line-height:1.6;margin-top:2px;">Clay, tools & aprons provided through Quokka's Bengaluru host network.</p></div>
+        </div>
+      </div>`;
+  }
+  setTimeout(()=>{const cm=document.getElementById('chat-msgs');if(cm)cm.scrollTop=cm.scrollHeight;},50);
+}
+function sendMsg(){
+  const inp=document.getElementById('chat-input');
+  if(!inp||!inp.value.trim()) return;
+  const t=new Date().toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'});
+  chatMsgs.push({from:'me',t:inp.value.trim(),time:t});
+  inp.value='';
+  renderMsgBody();
+  setTimeout(()=>{chatMsgs.push({from:'them',t:'See you there 🙌 — it\'ll be brilliant!',time:new Date().toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'})});renderMsgBody();},1100);
+}
+
+/* PROFILE */
+function renderProfile(c){
+  const u=state.user; const g=state.genome; const p=ARCHETYPES[g.primary];
+  c.innerHTML=`
+    <div style="padding:1.5rem 1.25rem 1rem;background:#fff;border-bottom:1px solid #EAE6F0;">
+      <div style="display:flex;gap:14px;align-items:flex-start;margin-bottom:16px;">
+        <div style="width:64px;height:64px;border-radius:20px;background:linear-gradient(135deg,#6B2060,#BA1E47);display:flex;align-items:center;justify-content:center;color:white;font-size:26px;font-weight:800;">${u.name[0]}</div>
+        <div style="flex:1;">
+          <div class="serif" style="font-size:20px;font-weight:800;color:#1A1625;">${u.name}</div>
+          <div style="font-size:12px;color:#A09AAD;margin-top:1px;">${u.city}, Bengaluru</div>
+          <div style="margin-top:8px;"><span class="pill">${p.icon} ${p.name}</span></div>
+        </div>
+      </div>
+      <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;">
+        ${[["4.9","Rating"],["1","Sessions"],["0","Badges"]].map(([v,l])=>`
+          <div style="background:#F4F2F8;border-radius:12px;padding:10px 6px;text-align:center;">
+            <div class="serif grad-text" style="font-size:22px;font-weight:800;">${v}</div>
+            <div style="font-size:10px;color:#A09AAD;margin-top:1px;">${l}</div>
+          </div>`).join('')}
+      </div>
+    </div>
+    <div style="padding:1.25rem;">
+      <button onclick="goTo('quiz')" style="width:100%;padding:12px;border-radius:14px;border:1.5px dashed #BA1E47;background:#F8E8ED;color:#BA1E47;font-size:13px;font-weight:700;margin-bottom:12px;">🧬 Retake Hobby DNA Test</button>
+      <div style="padding:14px;background:#fff;border-radius:14px;border:1px solid #EAE6F0;">
+        <div style="font-size:12px;font-weight:700;color:#1A1625;margin-bottom:8px;">Your Hobby Genome</div>
+        <div style="display:flex;gap:10px;align-items:center;">
+          <div style="width:40px;height:40px;border-radius:12px;background:${p.grad};display:flex;align-items:center;justify-content:center;font-size:18px;color:white;">${p.icon}</div>
+          <div>
+            <div style="font-size:13px;font-weight:700;color:#1A1625;">Primary: ${p.name}</div>
+            <div style="font-size:11px;color:#A09AAD;">${ARCHETYPES[state.genome.secondary].name} secondary</div>
+          </div>
+        </div>
+      </div>
+    </div>`;
+}
+
+/* ═══════════════════════════════════════
+   SESSION DETAIL
+═══════════════════════════════════════ */
+let detailTab='info';
+function openSession(id){
+  state.session=SESSIONS.find(s=>s.id===id);
+  detailTab='info';
+  goTo('detail');
+}
+function renderDetail(){
+  const s=state.session; const g=state.genome; const h=HOSTS[s.host]; const p=ARCHETYPES[g.primary];
+  // Hero
+  document.getElementById('detail-hero').innerHTML=`
+    <div style="position:absolute;inset:0;background:${s.scene};"></div>
+    <div style="position:absolute;inset:0;background:linear-gradient(to bottom,rgba(0,0,0,.2) 0%,transparent 40%,rgba(0,0,0,.55) 100%);"></div>
+    <button onclick="goTo('main')" style="position:absolute;top:12px;left:16px;z-index:10;width:36px;height:36px;border-radius:50%;background:rgba(255,255,255,.22);backdrop-filter:blur(8px);border:none;color:white;font-size:20px;display:flex;align-items:center;justify-content:center;line-height:1;">‹</button>
+    <div style="position:absolute;top:14px;right:14px;padding:3px 9px;border-radius:20px;background:rgba(255,255,255,.18);backdrop-filter:blur(6px);font-size:10px;font-weight:700;color:white;">${s.tag}</div>
+    <div style="position:absolute;bottom:16px;left:16px;right:16px;">
+      <h2 class="serif" style="font-size:22px;font-weight:800;color:white;line-height:1.1;margin-bottom:4px;text-shadow:0 2px 8px rgba(0,0,0,.4);">${s.title}</h2>
+      <p style="font-size:12px;color:rgba(255,255,255,.85);">${s.sub} · 📍 ${s.city}</p>
+    </div>`;
+
+  // Tabs
+  const tabs=[['info','Details'],['badges','Badges'],['trust','Trust'],['privacy','Privacy']];
+  document.getElementById('detail-tabs').innerHTML=tabs.map(([id,label])=>`
+    <button onclick="switchDetailTab('${id}')" id="dtab-${id}" style="padding:11px 16px;background:none;border:none;border-bottom:2.5px solid ${detailTab===id?'#BA1E47':'transparent'};color:${detailTab===id?'#BA1E47':'#A09AAD'};font-size:12px;font-weight:${detailTab===id?700:500};cursor:pointer;white-space:nowrap;flex-shrink:0;">${label}</button>`).join('');
+
+  document.getElementById('detail-cta').textContent=`Book for ₹${s.price} →`;
+  renderDetailBody();
+}
+function switchDetailTab(tab){ detailTab=tab; renderDetail(); }
+function renderDetailBody(){
+  const s=state.session; const h=HOSTS[s.host]; const p=ARCHETYPES[ARCHETYPES[s.arc]?s.arc:'maker'];
+  const c=document.getElementById('detail-body');
+  if(detailTab==='info'){
+    c.innerHTML=`
+      <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin-bottom:16px;">
+        ${[['📅',s.date],['🕐',s.time.split('–')[0]],['📍',s.dist]].map(([ic,v])=>`
+          <div style="background:#fff;border-radius:12px;padding:10px 6px;text-align:center;border:1px solid #EAE6F0;">
+            <div style="font-size:15px;margin-bottom:2px;">${ic}</div>
+            <div style="font-size:10px;color:#6B6478;font-weight:600;line-height:1.3;">${v}</div>
+          </div>`).join('')}
+      </div>
+      <p style="font-size:13px;color:#6B6478;line-height:1.75;margin-bottom:16px;">A curated local session in ${s.city}. Small groups, personal attention, and everything provided. Perfect for curious beginners and hobbyists alike.</p>
+      <!-- HOST CARD -->
+      <button onclick="openHostProfile('${s.host}')" style="width:100%;background:#fff;border:1px solid #EAE6F0;border-radius:16px;padding:0;cursor:pointer;text-align:left;overflow:hidden;margin-bottom:14px;">
+        <div style="height:50px;background:${h?h.headerGrad:'linear-gradient(135deg,#6B2060,#BA1E47)'};position:relative;overflow:hidden;">
+          <svg viewBox="0 0 393 50" preserveAspectRatio="none" style="position:absolute;bottom:0;width:100%;height:100%;">
+            <path d="M0,30 C80,50 160,10 240,30 C320,50 370,20 393,30 L393,50 L0,50 Z" fill="rgba(255,255,255,0.15)"/>
+          </svg>
+        </div>
+        <div style="padding:0 14px 14px;margin-top:-22px;position:relative;">
+          <div style="display:flex;align-items:flex-end;gap:12px;margin-bottom:10px;">
+            <div style="position:relative;">
+              <div style="width:48px;height:48px;border-radius:50%;background:${h?h.avatarGrad:'#F8E8ED'};border:3px solid white;display:flex;align-items:center;justify-content:center;font-size:20px;box-shadow:0 2px 10px rgba(0,0,0,.12);">${h?h.emoji:'👤'}</div>
+              <div style="position:absolute;bottom:0;right:0;width:16px;height:16px;border-radius:50%;background:#2563EB;border:2px solid white;display:flex;align-items:center;justify-content:center;">
+                <svg width="7" height="5" viewBox="0 0 7 5"><path d="M0.5 2.5l2 2L6.5 0.5" stroke="white" stroke-width="1.5" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg>
+              </div>
+            </div>
+            <div style="flex:1;padding-bottom:2px;">
+              <div class="serif" style="font-size:15px;font-weight:700;color:#1A1625;">${h?h.fullName:s.host}</div>
+              <div style="font-size:10px;color:#2563EB;font-weight:700;">Domain Expert Verified</div>
+            </div>
+            <span style="font-size:11px;color:#6B6478;font-weight:600;padding:4px 10px;border-radius:20px;border:1px solid #EAE6F0;flex-shrink:0;">View profile →</span>
+          </div>
+          <p style="font-size:12px;color:#6B6478;line-height:1.55;margin-bottom:10px;">${h?h.bio.slice(0,100)+'…':''}</p>
+          <div style="display:flex;gap:14px;">
+            ${h?[['Classes',h.classes],['Students',h.students+'+'],['Rating',h.rating+' ⭐']].map(([l,v])=>`
+              <div style="text-align:center;">
+                <div class="serif" style="font-size:15px;font-weight:800;color:#1A1625;">${v}</div>
+                <div style="font-size:9px;color:#A09AAD;">${l}</div>
+              </div>`).join(''):''}
+          </div>
+        </div>
+      </button>
+      <!-- PRICE -->
+      <div style="padding:12px 16px;background:#F8E8ED;border-radius:14px;border:1px solid rgba(186,30,71,.14);display:flex;justify-content:space-between;align-items:center;">
+        <div>
+          <div style="font-size:11px;color:#6B6478;margin-bottom:2px;">Price per person</div>
+          <div class="serif grad-text" style="font-size:26px;font-weight:800;">₹${s.price}</div>
+        </div>
+        <div style="text-align:right;">
+          <div style="font-size:11px;color:#A09AAD;margin-bottom:2px;">Spots</div>
+          <div style="font-size:14px;font-weight:700;color:#BA1E47;">${s.spots} left</div>
+        </div>
+      </div>`;
+  } else if(detailTab==='badges'){
+    c.innerHTML=`
+      <div style="padding:12px 14px;background:#F8E8ED;border-radius:14px;margin-bottom:14px;display:flex;gap:10px;">
+        <span style="font-size:18px;">🏅</span>
+        <div><div style="font-size:13px;font-weight:700;color:#1A1625;">Community-Endorsed Badges</div><p style="font-size:11px;color:#6B6478;line-height:1.55;margin-top:2px;">Earned through peer ratings after every session.</p></div>
+      </div>
+      ${[['🏺','Clay Hands','5 sessions hosted',100],['⭐','Host Star','4.9+ rating avg',98],['🌟','Local Legend','Top host in area',100]].map(([e,n,d,p])=>`
+        <div style="background:#fff;border-radius:12px;padding:12px 14px;border:2px solid #BA1E47;margin-bottom:10px;display:flex;align-items:center;gap:12px;">
+          <div style="font-size:24px;width:36px;text-align:center;">${e}</div>
+          <div style="flex:1;">
+            <div style="font-size:13px;font-weight:700;color:#1A1625;">${n}</div>
+            <div style="font-size:10px;color:#A09AAD;margin-bottom:5px;">${d}</div>
+            <div style="height:3px;background:#EAE6F0;border-radius:2px;overflow:hidden;"><div style="height:100%;background:linear-gradient(135deg,#6B2060,#BA1E47);width:${p}%;"></div></div>
+          </div>
+          <div style="width:20px;height:20px;border-radius:50%;background:#BA1E47;color:white;display:flex;align-items:center;justify-content:center;font-size:9px;font-weight:700;">✓</div>
+        </div>`).join('')}`;
+  } else if(detailTab==='trust'){
+    c.innerHTML=`
+      <div style="background:#fff;border-radius:14px;border:1px solid #EAE6F0;padding:12px 16px;margin-bottom:12px;">
+        <div style="display:flex;justify-content:space-between;margin-bottom:8px;">
+          <span style="font-size:13px;font-weight:700;color:#1A1625;">Community trust score</span>
+          <span class="serif grad-text" style="font-size:17px;font-weight:800;">88%</span>
+        </div>
+        <div style="height:7px;background:#EAE6F0;border-radius:4px;overflow:hidden;"><div style="height:100%;background:linear-gradient(135deg,#6B2060,#BA1E47);width:88%;"></div></div>
+      </div>
+      ${(h?.reviews||[]).slice(0,2).map(r=>`
+        <div style="background:#fff;border-radius:12px;padding:12px;border:1px solid #EAE6F0;margin-bottom:10px;">
+          <div style="display:flex;gap:8px;align-items:center;margin-bottom:7px;">
+            <div style="width:28px;height:28px;border-radius:50%;background:#F8E8ED;color:#BA1E47;display:flex;align-items:center;justify-content:center;font-size:9px;font-weight:700;">${r.name.slice(0,2)}</div>
+            <div style="flex:1;"><div style="font-size:12px;font-weight:700;color:#1A1625;">${r.name}</div><span class="pill">${r.badge}</span></div>
+            <span style="color:#E8B830;font-size:12px;">${'★'.repeat(r.stars)}</span>
+          </div>
+          <p style="font-size:12px;color:#6B6478;line-height:1.6;">"${r.text}"</p>
+        </div>`).join('')}`;
+  } else if(detailTab==='privacy'){
+    c.innerHTML=`
+      <div style="padding:12px 14px;background:#F8E8ED;border-radius:14px;margin-bottom:12px;display:flex;gap:10px;">
+        <span style="font-size:18px;">🔒</span>
+        <div><div style="font-size:13px;font-weight:700;color:#1A1625;">Privacy-First Profiles</div><p style="font-size:11px;color:#6B6478;line-height:1.55;margin-top:2px;">Your exact location is never shared publicly.</p></div>
+      </div>
+      ${[['Show real name',false],['Location (2km radius)',true],['Age range',true],['Profile photo',false]].map(([l,on])=>`
+        <div style="display:flex;justify-content:space-between;align-items:center;padding:12px 0;border-bottom:1px solid #EAE6F0;">
+          <span style="font-size:13px;color:#6B6478;">${l}</span>
+          <div style="width:44px;height:24px;border-radius:12px;background:${on?'#BA1E47':'#EAE6F0'};position:relative;flex-shrink:0;">
+            <div style="width:18px;height:18px;border-radius:50%;background:white;position:absolute;top:3px;left:${on?23:3}px;box-shadow:0 1px 3px rgba(0,0,0,.2);"></div>
+          </div>
+        </div>`).join('')}`;
+  }
+}
+
+/* ═══════════════════════════════════════
+   HOST PROFILE
+═══════════════════════════════════════ */
+let hostTab='about';
+function openHostProfile(hostKey){
+  state.currentHostKey=hostKey;
+  hostTab='about';
+  goTo('host');
+}
+function renderHostProfile(){
+  const h=HOSTS[state.currentHostKey];
+  if(!h) return;
+  const header=document.getElementById('host-header');
+  header.style.background=h.headerGrad;
+  header.innerHTML=`
+    <svg viewBox="0 0 393 140" preserveAspectRatio="none" style="position:absolute;bottom:0;left:0;width:100%;height:100%;">
+      <path d="M0,80 C80,140 160,20 240,80 C320,140 370,60 393,80 L393,140 L0,140 Z" fill="rgba(255,255,255,0.12)"/>
+      <path d="M0,100 C60,60 140,140 220,100 C300,60 350,120 393,90 L393,140 L0,140 Z" fill="rgba(255,255,255,0.08)"/>
+    </svg>
+    <button onclick="goBack()" style="position:absolute;top:12px;left:16px;z-index:10;width:36px;height:36px;border-radius:50%;background:rgba(255,255,255,.22);border:none;color:white;font-size:20px;display:flex;align-items:center;justify-content:center;line-height:1;">‹</button>`;
+
+  document.getElementById('host-avatar-wrap').innerHTML=`
+    <div style="width:90px;height:90px;border-radius:50%;background:${h.avatarGrad};border:4px solid white;display:flex;align-items:center;justify-content:center;font-size:32px;box-shadow:0 4px 20px rgba(0,0,0,.15);">${h.emoji}</div>
+    <div style="position:absolute;bottom:2px;right:2px;width:26px;height:26px;border-radius:50%;background:#2563EB;border:2.5px solid white;display:flex;align-items:center;justify-content:center;">
+      <svg width="12" height="9" viewBox="0 0 12 9"><path d="M1 4l3.5 3.5L11 1" stroke="white" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg>
+    </div>`;
+
+  document.getElementById('host-name').textContent=h.fullName;
+  document.getElementById('host-bio').textContent=h.bio;
+  document.getElementById('host-stats').innerHTML=[['Classes',h.classes],['Students',h.students+'+'],['Rating',h.rating+' ⭐']].map(([l,v],i)=>`
+    <div style="padding:14px 8px;text-align:center;${i<2?'border-right:1px solid #EAE6F0;':''}">
+      <div class="serif" style="font-size:22px;font-weight:800;color:#1A1625;">${v}</div>
+      <div style="font-size:11px;color:#6B6478;margin-top:2px;">${l}</div>
+    </div>`).join('');
+
+  renderHostBody();
+}
+function switchHostTab(tab){
+  hostTab=tab;
+  ['about','portfolio','reviews'].forEach(t=>{
+    const btn=document.getElementById('htab-'+t);
+    if(btn){
+      btn.style.borderBottom=t===tab?'2.5px solid #BA1E47':'2.5px solid transparent';
+      btn.style.color=t===tab?'#BA1E47':'#A09AAD';
+      btn.style.fontWeight=t===tab?'700':'500';
+    }
+  });
+  renderHostBody();
+}
+function renderHostBody(){
+  const h=HOSTS[state.currentHostKey]; if(!h) return;
+  const c=document.getElementById('host-body');
+  if(hostTab==='about'){
+    const sess=state.session;
+    c.innerHTML=`
+      <!-- Skill bar -->
+      <div style="background:#fff;border-radius:16px;padding:16px;margin-bottom:14px;box-shadow:0 2px 10px rgba(0,0,0,.05);">
+        <div style="font-size:15px;font-weight:700;color:#1A1625;margin-bottom:12px;">Skill Level: ${h.skill.label}</div>
+        <div style="height:8px;background:#EAE6F0;border-radius:4px;overflow:hidden;margin-bottom:8px;">
+          <div style="height:100%;border-radius:4px;background:linear-gradient(90deg,#00D4AA,#2563EB);width:${h.skill.level}%;transition:width 1s ease;"></div>
+        </div>
+        <div style="display:flex;justify-content:space-between;font-size:11px;color:#A09AAD;">
+          <span>Beginner</span><span>Intermediate</span><span>Expert</span>
+        </div>
+      </div>
+      <!-- Tags -->
+      <div style="background:#fff;border-radius:16px;padding:16px;margin-bottom:14px;box-shadow:0 2px 10px rgba(0,0,0,.05);">
+        <div style="font-size:13px;font-weight:700;color:#1A1625;margin-bottom:10px;">Specialities</div>
+        <div style="display:flex;flex-wrap:wrap;gap:7px;">
+          ${h.tags.map(t=>`<span class="tag-pill">${t}</span>`).join('')}
+        </div>
+      </div>
+      <!-- Location -->
+      <div style="background:#fff;border-radius:16px;padding:14px 16px;box-shadow:0 2px 10px rgba(0,0,0,.05);display:flex;gap:10px;align-items:center;margin-bottom:14px;">
+        <div style="width:36px;height:36px;border-radius:12px;background:#F8E8ED;display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0;">📍</div>
+        <div>
+          <div style="font-size:13px;font-weight:700;color:#1A1625;">${h.location}</div>
+          <div style="font-size:11px;color:#6B6478;">${h.city} · Verified address</div>
+        </div>
+        <div style="margin-left:auto;padding:4px 10px;border-radius:20px;background:#EBF5FF;color:#2563EB;font-size:10px;font-weight:700;">✓ Verified</div>
+      </div>
+      ${sess?`
+      <!-- Session card -->
+      <div style="background:#fff;border-radius:16px;overflow:hidden;box-shadow:0 2px 10px rgba(0,0,0,.05);">
+        <div style="height:80px;background:${sess.scene};position:relative;">
+          <div style="position:absolute;inset:0;background:linear-gradient(to bottom,transparent 30%,rgba(0,0,0,.4));"></div>
+          <div style="position:absolute;bottom:8px;left:12px;">
+            <div class="serif" style="font-size:14px;font-weight:700;color:white;">${sess.title}</div>
+            <div style="font-size:10px;color:rgba(255,255,255,.8);">${sess.sub}</div>
+          </div>
+        </div>
+        <div style="padding:12px 14px;display:flex;justify-content:space-between;align-items:center;">
+          <div>
+            <div style="font-size:12px;color:#6B6478;">🕐 ${sess.time}</div>
+            <div style="font-size:12px;color:#6B6478;margin-top:2px;">📍 ${sess.city} · ${sess.dist}</div>
+          </div>
+          <div style="text-align:right;">
+            <div class="serif grad-text" style="font-size:20px;font-weight:800;">₹${sess.price}</div>
+            <div style="font-size:10px;color:#BA1E47;">${sess.spots} spots left</div>
+          </div>
+        </div>
+      </div>`:''}`;
+  } else if(hostTab==='portfolio'){
+    c.innerHTML=`
+      <p style="font-size:13px;color:#6B6478;margin-bottom:14px;line-height:1.6;">Work and sessions by ${h.fullName.split(' ')[0]}.</p>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;">
+        ${h.portfolio.map((p,i)=>`
+          <div style="border-radius:14px;overflow:hidden;aspect-ratio:1;position:relative;box-shadow:0 2px 10px rgba(0,0,0,.1);">
+            <div style="width:100%;height:100%;background:${p.scene};"></div>
+            <div style="position:absolute;inset:0;background:linear-gradient(to bottom,transparent 50%,rgba(0,0,0,.55));"></div>
+            <div style="position:absolute;bottom:0;left:0;right:0;padding:8px 10px;">
+              <div style="font-size:10px;font-weight:600;color:white;text-shadow:0 1px 3px rgba(0,0,0,.5);">${p.label}</div>
+            </div>
+            ${i===1?`<div style="position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);width:32px;height:32px;border-radius:50%;background:rgba(255,255,255,.25);backdrop-filter:blur(4px);display:flex;align-items:center;justify-content:center;">▶</div>`:''}
+          </div>`).join('')}
+      </div>`;
+  } else {
+    c.innerHTML=`
+      <!-- Rating bar -->
+      <div style="background:#fff;border-radius:16px;padding:16px;margin-bottom:14px;box-shadow:0 2px 10px rgba(0,0,0,.05);display:flex;align-items:center;gap:16px;">
+        <div style="text-align:center;">
+          <div class="serif grad-text" style="font-size:40px;font-weight:800;line-height:1;">${h.rating}</div>
+          <div style="font-size:11px;color:#6B6478;margin-top:2px;">out of 5</div>
+        </div>
+        <div style="flex:1;">
+          ${[5,4,3].map(n=>`
+            <div style="display:flex;align-items:center;gap:6px;margin-bottom:4px;">
+              <span style="font-size:9px;color:#A09AAD;width:4px;">${n}</span>
+              <span style="font-size:10px;color:#E8B830;">★</span>
+              <div style="flex:1;height:4px;background:#EAE6F0;border-radius:2px;overflow:hidden;">
+                <div style="height:100%;background:#E8B830;width:${n===5?85:n===4?12:3}%;border-radius:2px;"></div>
+              </div>
+            </div>`).join('')}
+          <div style="font-size:11px;color:#6B6478;margin-top:4px;">${h.students}+ students total</div>
+        </div>
+      </div>
+      ${h.reviews.map(r=>`
+        <div style="background:#fff;border-radius:14px;padding:14px;border:1px solid #EAE6F0;margin-bottom:10px;">
+          <div style="display:flex;align-items:center;gap:10px;margin-bottom:8px;">
+            <div style="width:34px;height:34px;border-radius:50%;background:#F8E8ED;color:#BA1E47;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:800;">${r.name.slice(0,2).toUpperCase()}</div>
+            <div style="flex:1;">
+              <div style="font-size:13px;font-weight:700;color:#1A1625;">${r.name}</div>
+              <span class="pill">${r.badge}</span>
+            </div>
+            <div style="font-size:13px;color:#E8B830;">${'★'.repeat(r.stars)}</div>
+          </div>
+          <p style="font-size:12px;color:#6B6478;line-height:1.65;">"${r.text}"</p>
+        </div>`).join('')}`;
+  }
+}
+
+/* ═══════════════════════════════════════
+   BOOKING
+═══════════════════════════════════════ */
+function renderBooking(){
+  const s=state.session; const h=HOSTS[s.host];
+  document.getElementById('book-title').textContent=`Book — ${s.title}`;
+  document.getElementById('book-sub').textContent=`${h?h.fullName:s.host} · ${s.city}`;
+  document.getElementById('spots-left').textContent=`${s.spots} spots remaining`;
+
+  const dates=[s.date,'31 MAY','07 JUN'];
+  document.getElementById('date-picker').innerHTML=dates.map((d,i)=>`
+    <button onclick="selectDate(${i})" id="date-btn-${i}" style="flex:1;padding:12px 6px;border-radius:14px;border:2px solid ${state.selectedDate===i?'#BA1E47':'#EAE6F0'};background:${state.selectedDate===i?'#F8E8ED':'#fff'};cursor:pointer;text-align:center;transition:all .15s;">
+      <div class="serif ${state.selectedDate===i?'grad-text':''}" style="font-size:16px;font-weight:800;${state.selectedDate!==i?'color:#1A1625;':''}">${d.split(' ')[0]}</div>
+      <div style="font-size:9px;color:${state.selectedDate===i?'#BA1E47':'#A09AAD'};font-weight:700;margin-top:2px;">${d.split(' ')[1]}</div>
+    </button>`).join('');
+
+  updateGuestDisplay();
+  updateOrderSummary();
+}
+function selectDate(i){ state.selectedDate=i; renderBooking(); }
+function changeGuests(d){ state.guests=Math.max(1,Math.min(state.session.spots,state.guests+d)); updateGuestDisplay(); updateOrderSummary(); }
+function updateGuestDisplay(){
+  const el=document.getElementById('guest-count');
+  const lbl=document.getElementById('guest-label');
+  if(el) el.textContent=state.guests;
+  if(lbl) lbl.textContent=state.guests>1?'people':'person';
+}
+function updateOrderSummary(){
+  const s=state.session; if(!s) return;
+  const total=s.price*state.guests;
+  const fee=Math.round(total*.05);
+  const gst=Math.round(total*.18);
+  const grand=Math.round(total*1.23);
+  const c=document.getElementById('order-summary');
+  if(!c) return;
+  c.innerHTML=`
+    <div style="padding:14px 16px;border-bottom:1px solid #EAE6F0;">
+      <div style="font-size:13px;font-weight:700;color:#1A1625;margin-bottom:10px;">Order summary</div>
+      ${[[`${s.title} × ${state.guests}`,`₹${total}`],['Platform fee (5%)',`₹${fee}`],['GST (18%)',`₹${gst}`]].map(([l,v])=>`
+        <div style="display:flex;justify-content:space-between;margin-bottom:6px;">
+          <span style="font-size:12px;color:#6B6478;">${l}</span>
+          <span style="font-size:12px;color:#1A1625;font-weight:500;">${v}</span>
+        </div>`).join('')}
+    </div>
+    <div style="padding:12px 16px;background:#F8E8ED;display:flex;justify-content:space-between;align-items:center;">
+      <span style="font-size:14px;font-weight:700;color:#1A1625;">Total</span>
+      <span class="serif grad-text" style="font-size:22px;font-weight:800;">₹${grand}</span>
+    </div>`;
+  state.booking={session:s,guests:state.guests,date:['24 MAY','31 MAY','07 JUN'][state.selectedDate],total:grand};
+}
+
+/* ═══════════════════════════════════════
+   PAYMENT
+═══════════════════════════════════════ */
+function renderPayment(){
+  const b=state.booking;
+  document.getElementById('pay-sub').textContent=`₹${b.total} · ${b.session.title}`;
+  document.getElementById('pay-btn').textContent=`Pay ₹${b.total} →`;
+  document.getElementById('pay-hero').innerHTML=`
+    <div style="font-size:11px;color:rgba(255,255,255,.7);margin-bottom:4px;">Total amount</div>
+    <div class="serif" style="font-size:36px;font-weight:800;color:white;">₹${b.total}</div>
+    <div style="font-size:11px;color:rgba(255,255,255,.7);margin-top:4px;">${b.session.title} · ${b.guests} guest${b.guests>1?'s':''} · ${b.date}</div>`;
+
+  const methods=[{id:'upi',icon:'📱',l:'UPI',s:'Pay via UPI ID or QR'},{id:'card',icon:'💳',l:'Card',s:'Visa, Mastercard, Rupay'},{id:'nb',icon:'🏦',l:'Net Banking',s:'All Indian banks'},{id:'wallet',icon:'💰',l:'Wallet',s:'PhonePe, Paytm, GPay'}];
+  document.getElementById('pay-methods').innerHTML=methods.map(m=>`
+    <button onclick="selectPayMethod('${m.id}')" id="pm-${m.id}" style="padding:13px 16px;border-radius:14px;border:2px solid ${state.payMethod===m.id?'#BA1E47':'#EAE6F0'};background:${state.payMethod===m.id?'#F8E8ED':'#fff'};cursor:pointer;display:flex;align-items:center;gap:12px;text-align:left;width:100%;">
+      <span style="font-size:22px;">${m.icon}</span>
+      <div><div style="font-size:13px;font-weight:700;color:${state.payMethod===m.id?'#BA1E47':'#1A1625'};">${m.l}</div><div style="font-size:11px;color:#A09AAD;">${m.s}</div></div>
+      ${state.payMethod===m.id?`<div style="margin-left:auto;width:20px;height:20px;border-radius:50%;background:#BA1E47;color:white;display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:700;">✓</div>`:''}
+    </button>`).join('');
+
+  const upiWrap=document.getElementById('upi-input-wrap');
+  upiWrap.style.display=state.payMethod==='upi'?'block':'none';
+  if(state.payMethod==='upi'){
+    document.getElementById('upi-suggestions').innerHTML=['@okicici','@ybl','@paytm','@upi'].map(s=>`
+      <button onclick="document.getElementById('upi-inp').value='user${s}'" style="padding:4px 10px;border-radius:20px;border:1px solid #EAE6F0;background:#fff;color:#6B6478;font-size:10px;font-weight:600;">${s}</button>`).join('');
+  }
+}
+function selectPayMethod(m){ state.payMethod=m; renderPayment(); }
+function doPay(){
+  const btn=document.getElementById('pay-btn');
+  btn.textContent='Processing...'; btn.style.opacity='.6';
+  setTimeout(()=>{ goTo('confirm'); },2200);
+}
+
+/* ═══════════════════════════════════════
+   CONFIRMATION
+═══════════════════════════════════════ */
+function renderConfirmation(){
+  const b=state.booking; const h=HOSTS[b.session.host];
+  document.getElementById('confirm-subtitle').innerHTML=`Booking confirmed for<br><b>${b.session.title}</b> · ${b.date}`;
+  document.getElementById('confirm-card').innerHTML=`
+    <div style="padding:14px 16px;border-bottom:1px solid #EAE6F0;">
+      ${[['Session',b.session.title],['Host',h?h.fullName:b.session.host],['Location',b.session.city+', Bengaluru'],['Date',b.date],['Time',b.session.time],['Guests',b.guests+' person'+(b.guests>1?'s':'')],['Total paid','₹'+b.total]].map(([l,v])=>`
+        <div style="display:flex;justify-content:space-between;padding:6px 0;border-bottom:1px solid #EAE6F0;">
+          <span style="font-size:12px;color:#A09AAD;">${l}</span>
+          <span style="font-size:12px;font-weight:700;color:#1A1625;">${v}</span>
+        </div>`).join('')}
+    </div>
+    <div style="padding:18px;display:flex;flex-direction:column;align-items:center;background:#F4F2F8;">
+      <div style="padding:12px;background:white;border-radius:14px;margin-bottom:12px;">
+        ${qrSVG(120)}
+      </div>
+      <div style="font-size:13px;font-weight:700;color:#1A1625;margin-bottom:3px;">Scan at session entry</div>
+      <div style="font-size:11px;color:#A09AAD;text-align:center;line-height:1.5;">Show this to ${h?h.fullName.split(' ')[0]:b.session.host} on arrival</div>
+    </div>`;
+
+  document.getElementById('confirm-next').innerHTML=[
+    {e:'💬',t:'Message your host',d:'They\'ll send studio details 24h before your session'},
+    {e:'🏅',t:'Earn your first badge',d:'Complete the session to unlock community badges'},
+    {e:'🌟',t:'Leave a review',d:'Help other hobbyists find great hosts'}
+  ].map(n=>`
+    <div style="display:flex;gap:12px;margin-bottom:10px;padding:11px 14px;background:#fff;border-radius:12px;border:1px solid #EAE6F0;">
+      <span style="font-size:20px;">${n.e}</span>
+      <div><div style="font-size:13px;font-weight:700;color:#1A1625;margin-bottom:2px;">${n.t}</div><div style="font-size:11px;color:#6B6478;line-height:1.5;">${n.d}</div></div>
+    </div>`).join('');
+}
+
+/* ═══════════════════════════════════════
+   QR SVG HELPER
+═══════════════════════════════════════ */
+function qrSVG(size){
+  return `<svg viewBox="0 0 80 80" width="${size}" height="${size}" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <rect x="2" y="2" width="28" height="28" rx="3" fill="none" stroke="#BA1E47" stroke-width="2.5"/>
+    <rect x="8" y="8" width="16" height="16" rx="1" fill="#BA1E47"/>
+    <rect x="50" y="2" width="28" height="28" rx="3" fill="none" stroke="#BA1E47" stroke-width="2.5"/>
+    <rect x="56" y="8" width="16" height="16" rx="1" fill="#BA1E47"/>
+    <rect x="2" y="50" width="28" height="28" rx="3" fill="none" stroke="#BA1E47" stroke-width="2.5"/>
+    <rect x="8" y="56" width="16" height="16" rx="1" fill="#BA1E47"/>
+    <rect x="50" y="50" width="8" height="8" fill="#4D4D4D"/>
+    <rect x="60" y="50" width="8" height="8" fill="#4D4D4D"/>
+    <rect x="70" y="50" width="8" height="8" fill="#4D4D4D"/>
+    <rect x="50" y="60" width="8" height="8" fill="#4D4D4D"/>
+    <rect x="70" y="60" width="8" height="8" fill="#4D4D4D"/>
+    <rect x="50" y="70" width="8" height="8" fill="#4D4D4D"/>
+    <rect x="60" y="70" width="8" height="8" fill="#4D4D4D"/>
+    <rect x="70" y="70" width="8" height="8" fill="#4D4D4D"/>
+    <rect x="35" y="2" width="6" height="6" fill="#BA1E47"/>
+    <rect x="35" y="14" width="6" height="6" fill="#BA1E47"/>
+    <rect x="35" y="26" width="6" height="6" fill="#BA1E47"/>
+    <rect x="2" y="35" width="6" height="6" fill="#BA1E47"/>
+    <rect x="14" y="35" width="6" height="6" fill="#BA1E47"/>
+    <rect x="26" y="35" width="6" height="6" fill="#BA1E47"/>
+    <rect x="44" y="35" width="6" height="6" fill="#BA1E47"/>
+  </svg>`;
+}
+
+/* ═══════════════════════════════════════
+   INIT
+═══════════════════════════════════════ */
+renderSplash();
+// Update clock
+setInterval(()=>{
+  const now=new Date();
+  const h=now.getHours()%12||12;
+  const m=String(now.getMinutes()).padStart(2,'0');
+  const el=document.getElementById('sb-time');
+  if(el) el.textContent=`${h}:${m}`;
+},1000);
+</script>
+</body>
+</html>
