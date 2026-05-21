@@ -1,0 +1,1288 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>Quokka</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,600;0,700;0,800;1,400;1,600&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet"/>
+<!-- Satoshi via Fontshare CDN -->
+<link href="https://api.fontshare.com/v2/css?f[]=satoshi@300,400,500,700,900&display=swap" rel="stylesheet"/>
+<style>
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent;}
+::-webkit-scrollbar{display:none;}
+html,body{height:100%;background:#e8e0f0;display:flex;align-items:center;justify-content:center;font-family:'Satoshi','DM Sans',sans-serif;}
+button,input{font-family:'Satoshi','DM Sans',sans-serif;}
+
+/* ── PHONE ── */
+#phone{
+  width:390px;height:844px;
+  border-radius:54px;overflow:hidden;
+  position:relative;display:flex;flex-direction:column;
+  box-shadow:0 0 0 1px rgba(255,255,255,.3),0 0 0 10px #1a1a1a,0 0 0 12px #2d2d2d,0 60px 140px rgba(0,0,0,.6);
+  background:#faf4f4;
+}
+
+/* ── STATUS BAR ── */
+#sb{height:50px;display:flex;align-items:flex-end;justify-content:space-between;padding:0 28px 8px;flex-shrink:0;position:relative;z-index:100;}
+#sb .notch{position:absolute;top:0;left:50%;transform:translateX(-50%);width:128px;height:34px;background:#000;border-radius:0 0 22px 22px;}
+.sb-l{font-size:15px;font-weight:600;color:inherit;letter-spacing:-.3px;}
+.sb-r{display:flex;gap:5px;align-items:center;}
+
+/* ── SCREEN ── */
+#content{flex:1;position:relative;overflow:hidden;}
+.sc{position:absolute;inset:0;display:none;flex-direction:column;overflow:hidden;}
+.sc.on{display:flex;}
+
+/* ── GRADIENT BLOBS (reusable) ── */
+.blob-bg{position:absolute;inset:0;z-index:0;}
+.blob-content{position:relative;z-index:1;flex:1;display:flex;flex-direction:column;overflow-y:auto;}
+.blob-content::-webkit-scrollbar{display:none;}
+
+/* ── TYPOGRAPHY ── */
+.hero-title{font-family:'Satoshi','DM Sans',sans-serif;font-size:42px;font-weight:800;line-height:1.05;letter-spacing:-.5px;}
+.hero-sub{font-size:16px;font-weight:400;line-height:1.6;letter-spacing:-.1px;}
+.section-title{font-family:'Satoshi','DM Sans',sans-serif;font-size:28px;font-weight:700;letter-spacing:-.3px;line-height:1.15;}
+.small-label{font-size:11px;font-weight:600;letter-spacing:1px;text-transform:uppercase;}
+
+/* ── DARK PILL BUTTON (from reference) ── */
+.pill-dark{width:100%;height:56px;border-radius:28px;background:#1c1c2e;border:none;color:#fff;font-size:17px;font-weight:500;letter-spacing:-.1px;cursor:pointer;transition:opacity .15s;}
+.pill-dark:active{opacity:.8;}
+.pill-light{width:100%;height:56px;border-radius:28px;background:rgba(255,255,255,.9);border:none;color:#1c1c2e;font-size:17px;font-weight:500;letter-spacing:-.1px;cursor:pointer;backdrop-filter:blur(10px);transition:opacity .15s;}
+.pill-light:active{opacity:.8;}
+.link-btn{background:none;border:none;font-size:15px;color:#1c1c2e;text-decoration:underline;cursor:pointer;letter-spacing:-.1px;opacity:.6;}
+
+/* ── FROSTED CARD ── */
+.frosted{background:rgba(255,255,255,.82);backdrop-filter:blur(20px) saturate(1.5);-webkit-backdrop-filter:blur(20px) saturate(1.5);border-radius:22px;}
+.frosted-sm{background:rgba(255,255,255,.88);backdrop-filter:blur(16px);-webkit-backdrop-filter:blur(16px);border-radius:16px;}
+
+/* ── BOTTOM NAV ── */
+#tab-bar{
+  position:absolute;bottom:0;left:0;right:0;height:84px;padding:0 8px 20px;
+  display:flex;align-items:flex-start;padding-top:10px;
+  background:rgba(250,244,244,.88);backdrop-filter:blur(24px) saturate(1.5);
+  -webkit-backdrop-filter:blur(24px) saturate(1.5);
+  border-top:.5px solid rgba(255,255,255,.6);
+  z-index:20;
+}
+.tab{flex:1;display:flex;flex-direction:column;align-items:center;gap:3px;background:none;border:none;cursor:pointer;}
+.tab-ic{width:28px;height:28px;display:flex;align-items:center;justify-content:center;transition:transform .2s cubic-bezier(.34,1.56,.64,1);}
+.tab.on .tab-ic{transform:scale(1.12);}
+.tab-lb{font-size:10px;font-weight:500;color:#9990b0;letter-spacing:.1px;}
+.tab.on .tab-lb{color:#c4537a;font-weight:600;}
+
+/* ── ANIMATIONS ── */
+@keyframes fadeUp{from{opacity:0;transform:translateY(22px)}to{opacity:1;transform:translateY(0)}}
+@keyframes popIn{from{opacity:0;transform:scale(.88)}to{opacity:1;transform:scale(1)}}
+@keyframes slideRight{from{opacity:0;transform:translateX(-24px)}to{opacity:1;transform:translateX(0)}}
+.au{animation:fadeUp .45s cubic-bezier(.4,0,.2,1) both;}
+.au2{animation:fadeUp .45s .1s cubic-bezier(.4,0,.2,1) both;}
+.au3{animation:fadeUp .45s .2s cubic-bezier(.4,0,.2,1) both;}
+.au4{animation:fadeUp .45s .3s cubic-bezier(.4,0,.2,1) both;}
+.pop{animation:popIn .4s cubic-bezier(.34,1.56,.64,1) both;}
+
+/* ── TOGGLE ── */
+.tog{width:50px;height:30px;border-radius:15px;background:#e8e0f0;border:none;position:relative;cursor:pointer;transition:background .25s;flex-shrink:0;}
+.tog.on{background:linear-gradient(135deg,#f093c0,#9b6fc0);}
+.tog::after{content:'';position:absolute;width:24px;height:24px;border-radius:50%;background:#fff;top:3px;left:3px;transition:left .25s;box-shadow:0 2px 6px rgba(0,0,0,.2);}
+.tog.on::after{left:23px;}
+
+/* ── QUIZ OPTION ── */
+.qopt{
+  padding:16px 20px;border-radius:18px;background:rgba(255,255,255,.8);
+  backdrop-filter:blur(12px);border:none;display:flex;align-items:center;
+  gap:14px;text-align:left;width:100%;cursor:pointer;
+  transition:transform .12s,background .15s;
+  box-shadow:0 2px 16px rgba(180,100,140,.08);
+}
+.qopt:active{transform:scale(.97);background:rgba(255,255,255,.95);}
+.qopt-ic{width:42px;height:42px;border-radius:14px;display:flex;align-items:center;justify-content:center;font-size:20px;flex-shrink:0;}
+.qopt-tx{font-size:15px;color:#2d1f3d;line-height:1.4;letter-spacing:-.1px;}
+
+/* ── EMOTION SCROLL ── */
+.emo-wrap{display:flex;gap:16px;overflow-x:auto;padding:8px 0;scrollbar-width:none;}
+.emo-wrap::-webkit-scrollbar{display:none;}
+.emo-item{display:flex;flex-direction:column;align-items:center;gap:8px;flex-shrink:0;cursor:pointer;}
+.emo-ball{width:80px;height:80px;border-radius:50%;display:flex;align-items:center;justify-content:center;transition:transform .2s cubic-bezier(.34,1.56,.64,1);}
+.emo-ball.sel{transform:scale(1.18);box-shadow:0 8px 28px rgba(0,0,0,.18);}
+.emo-label{font-size:13px;font-weight:600;color:#2d1f3d;opacity:0;transition:opacity .2s;}
+.emo-item.sel .emo-label{opacity:1;}
+
+/* ── SEARCH BAR ── */
+.search-bar{height:50px;border-radius:14px;background:rgba(255,255,255,.7);backdrop-filter:blur(10px);display:flex;align-items:center;padding:0 16px;gap:10px;}
+.search-bar input{flex:1;background:none;border:none;outline:none;font-size:16px;color:#2d1f3d;letter-spacing:-.1px;}
+.search-bar input::placeholder{color:#b0a0c0;}
+
+/* ── PROGRESS DOTS ── */
+.prog-dots{display:flex;gap:6px;align-items:center;justify-content:center;}
+.prog-dot{width:8px;height:8px;border-radius:4px;background:rgba(255,255,255,.35);transition:all .3s;}
+.prog-dot.on{width:24px;background:#fff;}
+
+/* ── HOST CARD ── */
+.host-card{border-radius:24px;overflow:hidden;position:relative;}
+
+/* Hairline */
+.hl{height:.5px;background:rgba(0,0,0,.08);}
+</style>
+</head>
+<body>
+<div id="phone">
+
+  <div id="sb" style="color:#2d1f3d;">
+    <span class="sb-l" id="sb-time">9:41</span>
+    <div class="notch"></div>
+    <div class="sb-r">
+      <svg width="17" height="12" viewBox="0 0 17 12"><rect x="0" y="4" width="3" height="8" rx="1" fill="#2d1f3d" opacity=".3"/><rect x="5" y="2.5" width="3" height="9.5" rx="1" fill="#2d1f3d" opacity=".55"/><rect x="10" y="1" width="3" height="11" rx="1" fill="#2d1f3d" opacity=".8"/><rect x="15" y="0" width="2" height="12" rx="1" fill="#2d1f3d"/></svg>
+      <svg width="15" height="12" viewBox="0 0 15 12"><path d="M7.5 3c2.2 0 4.2 1 5.5 2.5l1.5-1.5C12.7 1.8 10.2.5 7.5.5S2.3 1.8.5 4L2 5.5C3.3 4 5.3 3 7.5 3z" fill="#2d1f3d"/><path d="M7.5 6c1.4 0 2.6.6 3.5 1.5L12.5 6C11.2 4.8 9.4 4 7.5 4S3.8 4.8 2.5 6L4 7.5C4.9 6.6 6.1 6 7.5 6z" fill="#2d1f3d"/><circle cx="7.5" cy="10.5" r="1.5" fill="#2d1f3d"/></svg>
+      <div style="display:flex;align-items:center;gap:1px;"><div style="width:21px;height:11px;border-radius:3px;border:1.5px solid rgba(45,31,61,.35);padding:1.5px;"><div style="height:100%;border-radius:1.5px;background:#2d1f3d;"></div></div></div>
+    </div>
+  </div>
+
+  <div id="content">
+
+  <!-- ══════════════════════════════════
+       SPLASH
+  ══════════════════════════════════ -->
+  <div class="sc on" id="sc-splash">
+    <div class="blob-bg">
+      <div style="position:absolute;inset:0;background:linear-gradient(170deg,#fef3e8 0%,#f9d4e8 35%,#e8c4f4 65%,#c4c4f8 100%);"></div>
+      <div style="position:absolute;top:-100px;left:-80px;width:400px;height:400px;border-radius:50%;background:radial-gradient(circle,rgba(255,180,200,.55) 0%,transparent 70%);"></div>
+      <div style="position:absolute;bottom:50px;right:-60px;width:350px;height:350px;border-radius:50%;background:radial-gradient(circle,rgba(180,150,240,.45) 0%,transparent 70%);"></div>
+    </div>
+    <div class="blob-content" style="padding:0 28px 32px;justify-content:flex-end;">
+      <div style="text-align:center;margin-bottom:48px;" class="au">
+        <div style="font-size:64px;margin-bottom:16px;filter:drop-shadow(0 8px 20px rgba(180,80,140,.3));width:80px;height:80px;display:flex;align-items:center;justify-content:center;margin:0 auto 16px;">
+          <svg width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round" style="filter:drop-shadow(0 8px 20px rgba(180,80,140,.3));"><path d="M11 20A7 7 0 0 1 9.8 6.1C15.5 5 17 4.48 19 2c1 2 2 4.18 2 8 0 5.5-4.78 10-10 10z"/><path d="M2 21c0-3 1.85-5.36 5.08-6C9.5 14.52 12 13 13 12"/></svg>
+        </div>
+        <h1 class="hero-title" style="color:#1c0d2e;margin-bottom:10px;">Find your<br><em>passion</em></h1>
+        <p class="hero-sub" style="color:#6b5580;max-width:280px;margin:0 auto;">Hobby hosts, 2km from you.<br>Bengaluru's local creativity network.</p>
+      </div>
+      <div style="display:flex;flex-direction:column;gap:12px;" class="au2">
+        <button class="pill-dark" onclick="goTo('signup')">Get started</button>
+        <p style="text-align:center;font-size:13px;color:#9980b8;font-weight:400;">2,400+ hobbyists in Bengaluru</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══════════════════════════════════
+       SIGN UP
+  ══════════════════════════════════ -->
+  <div class="sc" id="sc-signup">
+    <div class="blob-bg">
+      <div style="position:absolute;inset:0;background:linear-gradient(160deg,#f8f0ff 0%,#f0d8f8 40%,#f8c8e0 80%,#fce8d4 100%);"></div>
+      <div style="position:absolute;top:-60px;right:-80px;width:320px;height:320px;border-radius:50%;background:radial-gradient(circle,rgba(220,170,250,.6) 0%,transparent 70%);"></div>
+    </div>
+    <div class="blob-content" style="padding:20px 28px 32px;">
+      <div style="margin-bottom:32px;" class="au">
+        <p class="small-label" style="color:#c060a0;margin-bottom:8px;">Step 1 of 2</p>
+        <h2 class="section-title" style="color:#1c0d2e;margin-bottom:6px;">You just<br><span style="color:#c060a0;font-style:italic;">chose yourself</span></h2>
+        <p style="font-size:14px;color:#9980b8;letter-spacing:-.1px;">Let's make it easier to keep going.</p>
+      </div>
+      <div class="frosted" style="padding:6px;margin-bottom:16px;" class="au2">
+        <div style="border-radius:16px;overflow:hidden;">
+          <input id="inp-name" placeholder="First name" style="width:100%;padding:16px 20px;border:none;outline:none;font-size:17px;color:#1c0d2e;background:transparent;letter-spacing:-.2px;border-bottom:.5px solid rgba(0,0,0,.06);"/>
+          <input id="inp-email" placeholder="Email" type="email" style="width:100%;padding:16px 20px;border:none;outline:none;font-size:17px;color:#1c0d2e;background:transparent;letter-spacing:-.2px;"/>
+        </div>
+      </div>
+      <div style="margin-bottom:20px;" class="au3">
+        <p class="small-label" style="color:#9980b8;margin-bottom:10px;">Your neighbourhood</p>
+        <div style="display:flex;flex-wrap:wrap;gap:8px;" id="city-pills"></div>
+      </div>
+      <div class="au4">
+        <button class="pill-dark" onclick="doSignup()">Continue</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══════════════════════════════════
+       PERSONA QUIZ
+  ══════════════════════════════════ -->
+  <div class="sc" id="sc-quiz">
+    <div class="blob-bg" id="quiz-bg">
+      <div style="position:absolute;inset:0;background:linear-gradient(160deg,#fff0f8 0%,#f4d8f8 40%,#e8d0f8 80%,#d8e0ff 100%);"></div>
+      <div style="position:absolute;top:-40px;left:50%;transform:translateX(-50%);width:340px;height:340px;border-radius:50%;background:radial-gradient(circle,rgba(230,150,200,.5) 0%,transparent 65%);"></div>
+    </div>
+    <div class="blob-content" style="padding:20px 24px 32px;">
+      <div style="margin-bottom:24px;">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;">
+          <p class="small-label" id="quiz-lbl" style="color:#c060a0;">Question 1 of 5</p>
+          <div style="display:flex;gap:4px;" id="quiz-dots"></div>
+        </div>
+        <div style="height:3px;background:rgba(255,255,255,.4);border-radius:2px;overflow:hidden;">
+          <div id="quiz-bar" style="height:100%;background:linear-gradient(90deg,#f093c0,#9b6fc0);border-radius:2px;width:20%;transition:width .4s ease;"></div>
+        </div>
+      </div>
+      <div class="frosted" style="padding:22px 20px;margin-bottom:20px;">
+        <p id="quiz-q" class="section-title" style="color:#1c0d2e;font-size:24px;"></p>
+      </div>
+      <div id="quiz-opts" style="display:flex;flex-direction:column;gap:10px;"></div>
+    </div>
+  </div>
+
+  <!-- ══════════════════════════════════
+       GENOME REVEAL
+  ══════════════════════════════════ -->
+  <div class="sc" id="sc-genome">
+    <div class="blob-bg" id="genome-bg">
+      <div style="position:absolute;inset:0;background:linear-gradient(170deg,#e8d0f8 0%,#f0c0d8 40%,#f8c8b0 70%,#fcdcb0 100%);"></div>
+      <div style="position:absolute;top:60px;left:50%;transform:translateX(-50%);width:380px;height:380px;border-radius:50%;background:radial-gradient(circle,rgba(255,255,255,.35) 0%,transparent 65%);"></div>
+      <div style="position:absolute;bottom:-80px;left:-60px;width:300px;height:300px;border-radius:50%;background:radial-gradient(circle,rgba(200,140,240,.3) 0%,transparent 70%);"></div>
+    </div>
+    <div class="blob-content" style="padding:28px 28px 32px;">
+      <div style="text-align:center;margin-bottom:32px;" class="au">
+        <p class="small-label" style="color:rgba(255,255,255,.7);margin-bottom:8px;">Your Hobby Genome</p>
+        <div id="genome-day" style="font-family:'Satoshi','DM Sans',sans-serif;font-size:72px;font-weight:800;color:#fff;line-height:1;letter-spacing:-2px;text-shadow:0 4px 20px rgba(0,0,0,.15);">Day 1</div>
+        <p class="small-label" style="color:rgba(255,255,255,.8);margin-top:8px;" id="genome-subtitle">YOUR JOURNEY BEGINS</p>
+      </div>
+
+      <!-- Primary archetype card -->
+      <div class="frosted" style="padding:20px;margin-bottom:16px;" class="au2">
+        <div style="display:flex;gap:14px;align-items:center;margin-bottom:12px;">
+          <div id="genome-arc-icon" style="width:56px;height:56px;border-radius:18px;display:flex;align-items:center;justify-content:center;flex-shrink:0;"></div>
+          <div>
+            <p class="small-label" style="color:#c060a0;margin-bottom:3px;">Primary archetype</p>
+            <h3 id="genome-arc-name" style="font-family:'Satoshi','DM Sans',sans-serif;font-size:22px;font-weight:700;color:#1c0d2e;letter-spacing:-.3px;"></h3>
+          </div>
+        </div>
+        <p id="genome-arc-desc" style="font-size:14px;color:#6b5580;line-height:1.6;margin-bottom:12px;letter-spacing:-.1px;"></p>
+        <div id="genome-traits" style="display:flex;flex-wrap:wrap;gap:6px;"></div>
+      </div>
+
+      <!-- Activities -->
+      <div style="margin-bottom:24px;" class="au3">
+        <p class="small-label" style="color:rgba(255,255,255,.75);margin-bottom:10px;">Starter activities — tap to unlock</p>
+        <div id="genome-acts" style="display:flex;flex-direction:column;gap:8px;"></div>
+      </div>
+
+      <div class="au4" style="display:flex;flex-direction:column;align-items:center;gap:12px;">
+        <p style="font-size:14px;color:rgba(255,255,255,.8);font-style:italic;text-align:center;">Every choice lights up your journey</p>
+        <button class="pill-dark" onclick="goTo('main')" style="background:#1c1c2e;">Explore sessions for me</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══════════════════════════════════
+       MAIN (HOME + TABS)
+  ══════════════════════════════════ -->
+  <div class="sc" id="sc-main">
+    <div id="main-body" style="flex:1;overflow-y:auto;padding-bottom:88px;"></div>
+    <div id="tab-bar">
+      <button class="tab on" id="tab-home" onclick="switchTab('home')"><div class="tab-ic" id="tib-home"></div><span class="tab-lb">Sessions</span></button>
+      <button class="tab" id="tab-discover" onclick="switchTab('discover')"><div class="tab-ic" id="tib-discover"></div><span class="tab-lb">Discover</span></button>
+      <button class="tab" id="tab-messages" onclick="switchTab('messages')"><div class="tab-ic" id="tib-messages"></div><span class="tab-lb">Messages</span></button>
+      <button class="tab" id="tab-profile" onclick="switchTab('profile')"><div class="tab-ic" id="tib-profile"></div><span class="tab-lb">Profile</span></button>
+    </div>
+  </div>
+
+  <!-- ══════════════════════════════════
+       SESSION DETAIL
+  ══════════════════════════════════ -->
+  <div class="sc" id="sc-detail">
+    <div id="detail-hero" style="height:260px;flex-shrink:0;position:relative;overflow:hidden;"></div>
+    <div style="flex:1;overflow-y:auto;background:#faf4f4;" id="detail-body"></div>
+    <div style="padding:12px 24px 16px;background:rgba(250,244,244,.95);backdrop-filter:blur(20px);border-top:.5px solid rgba(0,0,0,.06);flex-shrink:0;">
+      <button class="pill-dark" id="detail-cta" onclick="goTo('booking')">Book →</button>
+    </div>
+  </div>
+
+  <!-- ══════════════════════════════════
+       HOST PROFILE
+  ══════════════════════════════════ -->
+  <div class="sc" id="sc-host">
+    <div id="host-head" style="height:200px;flex-shrink:0;position:relative;overflow:hidden;"></div>
+    <div style="flex:1;overflow-y:auto;background:#faf4f4;" id="host-body"></div>
+    <div style="padding:12px 24px 16px;background:rgba(250,244,244,.95);backdrop-filter:blur(20px);border-top:.5px solid rgba(0,0,0,.06);flex-shrink:0;">
+      <button class="pill-dark" onclick="goTo('booking')">Book a Class</button>
+    </div>
+  </div>
+
+  <!-- ══════════════════════════════════
+       BOOKING
+  ══════════════════════════════════ -->
+  <div class="sc" id="sc-booking">
+    <div class="blob-bg">
+      <div style="position:absolute;inset:0;background:linear-gradient(170deg,#fff0f8 0%,#f4e0ff 50%,#ffe8f4 100%);"></div>
+    </div>
+    <div style="padding:16px 24px 8px;position:relative;z-index:1;flex-shrink:0;">
+      <button onclick="goBack()" style="background:none;border:none;font-size:15px;color:#c060a0;cursor:pointer;font-weight:500;letter-spacing:-.1px;padding:0;display:flex;align-items:center;gap:4px;">
+        <svg width="8" height="14" viewBox="0 0 8 14" fill="none"><path d="M7 1L1 7l6 6" stroke="#c060a0" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        Back
+      </button>
+    </div>
+    <div style="flex:1;overflow-y:auto;position:relative;z-index:1;" id="booking-body"></div>
+  </div>
+
+  <!-- ══════════════════════════════════
+       PAYMENT
+  ══════════════════════════════════ -->
+  <div class="sc" id="sc-payment">
+    <div class="blob-bg">
+      <div style="position:absolute;inset:0;background:linear-gradient(170deg,#f8f0ff 0%,#f0d8f8 45%,#f8c8e0 100%);"></div>
+    </div>
+    <div style="padding:16px 24px 8px;position:relative;z-index:1;flex-shrink:0;">
+      <button onclick="goBack()" style="background:none;border:none;font-size:15px;color:#c060a0;cursor:pointer;font-weight:500;letter-spacing:-.1px;display:flex;align-items:center;gap:4px;">
+        <svg width="8" height="14" viewBox="0 0 8 14" fill="none"><path d="M7 1L1 7l6 6" stroke="#c060a0" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        Back
+      </button>
+    </div>
+    <div style="flex:1;overflow-y:auto;position:relative;z-index:1;" id="payment-body"></div>
+  </div>
+
+  <!-- ══════════════════════════════════
+       CONFIRMATION
+  ══════════════════════════════════ -->
+  <div class="sc" id="sc-confirm">
+    <div style="flex:1;overflow-y:auto;" id="confirm-body"></div>
+  </div>
+
+  </div><!-- /content -->
+</div>
+
+<script>
+/* ─────────────────────────────────────────
+   DATA
+───────────────────────────────────────── */
+const HOSTS={
+  "Aarav K.":{fullName:"Aarav Kumar",emoji:"🏺",bio:"Master potter & ceramicist with 8+ years. Trained at NID Ahmedabad. Passionate about sharing the meditative joy of working with clay.",classes:42,students:350,rating:4.9,skill:{label:"Pottery",level:88},location:"Koramangala 4th Block",tags:["Wheel Throwing","Hand Building","Glazing","Raku Firing"],portfolio:["linear-gradient(135deg,#8B4513,#D2691E)","linear-gradient(135deg,#5C4033,#A0785A)","linear-gradient(135deg,#2F1B14,#8B6355)","linear-gradient(135deg,#4A3728,#9C7A6A)"],reviews:[{name:"Neha K.",stars:5,text:"Best creative experience in Bengaluru. Aarav makes even total beginners feel like artists!"},{name:"Raj V.",stars:5,text:"My third session — small groups, personal attention. Each one better than the last."}],avatarGrad:"linear-gradient(135deg,#C47840,#8B4513)",headerGrad:"linear-gradient(170deg,#FFCBA4,#FF8C69 40%,#E8622A 70%,#BA1E47)"},
+  "Jai P.":{fullName:"Jai Prasad",emoji:"💻",bio:"Creative coder & generative artist, 6 years building visual systems. IIT-B alumnus. Workshops feel more like art class than coding bootcamp.",classes:28,students:180,rating:4.9,skill:{label:"Creative Coding",level:92},location:"Whitefield",tags:["p5.js","Generative Art","Live Coding","Music Viz"],portfolio:["linear-gradient(135deg,#081222,#3060CC)","linear-gradient(135deg,#0A0830,#6030A0)","linear-gradient(135deg,#080820,#2040AA)","linear-gradient(135deg,#050B1A,#1A3080)"],reviews:[{name:"Priya M.",stars:5,text:"I came knowing zero coding and left with working generative art. Mind-blowing."},{name:"Arjun S.",stars:5,text:"Jai makes complex ideas feel playful. The best 2 hours I've spent in months."}],avatarGrad:"linear-gradient(135deg,#3060CC,#1A3080)",headerGrad:"linear-gradient(170deg,#B3CFFF,#6090EE 40%,#3060CC 70%,#1A1080)"},
+  "Priya R.":{fullName:"Priya Raghunathan",emoji:"🥾",bio:"Certified mountaineer & trail guide, 200+ hikes across Karnataka and the Himalayas. Founder of Women Who Hike Bengaluru.",classes:67,students:520,rating:4.8,skill:{label:"Trail Hiking",level:96},location:"Indiranagar",tags:["Trail Hiking","Nandi Hills","Night Treks","Bouldering"],portfolio:["linear-gradient(135deg,#081808,#50a855)","linear-gradient(135deg,#0A2010,#2A6035)","linear-gradient(135deg,#102808,#3A7845)","linear-gradient(135deg,#061410,#1A5028)"],reviews:[{name:"Karan T.",stars:5,text:"Priya knows every trail in Karnataka intimately. Safe, fun, deeply knowledgeable."},{name:"Ananya P.",stars:5,text:"The Nandi Hills dawn hike was life-changing. Priya's energy at 5am is unreal."}],avatarGrad:"linear-gradient(135deg,#50a855,#2A6035)",headerGrad:"linear-gradient(170deg,#AEEFC0,#5DC87A 40%,#2A8040 70%,#0A3018)"},
+  "Maya T.":{fullName:"Maya Thakur",emoji:"💃",bio:"Professional salsa & bachata instructor trained in Cali, Colombia. 9 years of teaching. Created HSR Layout's most popular weekend dance social.",classes:118,students:640,rating:4.7,skill:{label:"Latin Dance",level:98},location:"HSR Layout",tags:["Salsa","Bachata","Cha-Cha","Social Dancing"],portfolio:["linear-gradient(135deg,#180818,#cc44cc)","linear-gradient(135deg,#200830,#9020A0)","linear-gradient(135deg,#1A0628,#7830B0)","linear-gradient(135deg,#140420,#6020A0)"],reviews:[{name:"Rohan M.",stars:5,text:"Maya transforms complete beginners. I had two left feet — now I'm at every social!"},{name:"Sneha K.",stars:5,text:"The best dance class in Bengaluru, no contest. Pure joy every time."}],avatarGrad:"linear-gradient(135deg,#cc44cc,#8020A0)",headerGrad:"linear-gradient(170deg,#F0B8F8,#CC66EE 40%,#9030C0 70%,#500080)"},
+  "Sara M.":{fullName:"Sara Menon",emoji:"🥐",bio:"Pastry chef trained at Le Cordon Bleu, Paris. 7 years running artisan baking workshops in her Jayanagar flat kitchen.",classes:55,students:310,rating:5.0,skill:{label:"Artisan Baking",level:94},location:"Jayanagar",tags:["Sourdough","Croissants","Brioche","Fermentation"],portfolio:["linear-gradient(135deg,#1a0800,#d4804a)","linear-gradient(135deg,#2A1200,#C07040)","linear-gradient(135deg,#180A00,#B06030)","linear-gradient(135deg,#200E00,#D09060)"],reviews:[{name:"Vikram N.",stars:5,text:"Made my first croissant from scratch. Sara's patience and technique are extraordinary."},{name:"Meera J.",stars:5,text:"4 sessions done — each one teaches me something new and profound about baking."}],avatarGrad:"linear-gradient(135deg,#D4804A,#8B4020)",headerGrad:"linear-gradient(170deg,#FFD4A0,#FFB070 40%,#E08040 70%,#A04820)"},
+  "Meera S.":{fullName:"Meera Sharma",emoji:"🧘",bio:"RYT-500 certified yoga teacher, 12 years of practice. Specialises in Yin Yoga and restorative practices. Trained in Mysuru.",classes:89,students:480,rating:4.8,skill:{label:"Yin Yoga",level:97},location:"Banaswadi",tags:["Yin Yoga","Restorative","Pranayama","Meditation"],portfolio:["linear-gradient(135deg,#101818,#40a0a0)","linear-gradient(135deg,#0A1414,#306878)","linear-gradient(135deg,#081210,#285860)","linear-gradient(135deg,#0C1616,#386880)"],reviews:[{name:"Divya K.",stars:5,text:"Meera's classes are genuinely healing. I leave every session feeling 10 years younger."},{name:"Rahul P.",stars:5,text:"Never done yoga before — Meera made it completely accessible. Pure calm."}],avatarGrad:"linear-gradient(135deg,#40a0a0,#2A6868)",headerGrad:"linear-gradient(170deg,#A0E8E8,#50C0C0 40%,#2A9090 70%,#0A5050)"},
+  "Neha K.":{fullName:"Neha Krishnamurthy",emoji:"📸",bio:"Documentary photographer & visual storyteller. Published in National Geographic India, The Hindu, and Mint Lounge.",classes:31,students:195,rating:4.8,skill:{label:"Street Photography",level:91},location:"Malleshwaram",tags:["Street Photography","Golden Hour","Documentary","Lightroom"],portfolio:["linear-gradient(135deg,#0a0818,#8855bb)","linear-gradient(135deg,#100A20,#6040A0)","linear-gradient(135deg,#080618,#5030A0)","linear-gradient(135deg,#0C0A1C,#7050B0)"],reviews:[{name:"Ananya R.",stars:5,text:"Neha has an incredible eye and teaches you to see the city differently. Magical."},{name:"Sanjay M.",stars:4,text:"My photography improved more in 2 hours with Neha than 6 months on YouTube."}],avatarGrad:"linear-gradient(135deg,#8855bb,#5030A0)",headerGrad:"linear-gradient(170deg,#D0B0F8,#A070E0 40%,#7040C0 70%,#3A1880)"},
+  "Ravi M.":{fullName:"Ravi Menon",emoji:"🎭",bio:"Improv theatre director trained at Second City, Chicago. Co-founder of Bengaluru Improv Collective.",classes:76,students:890,rating:4.9,skill:{label:"Improv Theatre",level:95},location:"Koramangala",tags:["Improv","Storytelling","Character Work","Long-Form"],portfolio:["linear-gradient(135deg,#0a1830,#4a90a4)","linear-gradient(135deg,#081422,#3A7890)","linear-gradient(135deg,#0C1828,#2A6880)","linear-gradient(135deg,#060E1A,#205070)"],reviews:[{name:"Kavitha L.",stars:5,text:"Ravi creates a space where you forget fear. Laughed more in 2 hours than in months."},{name:"Rohan D.",stars:5,text:"Genuinely transformed how I communicate. Ravi is an exceptional facilitator."}],avatarGrad:"linear-gradient(135deg,#4a90a4,#205070)",headerGrad:"linear-gradient(170deg,#A0D4E8,#50A8C8 40%,#2A7898 70%,#0A3850)"}
+};
+
+/* ── MONOCHROMATIC SVG ICON SYSTEM ──
+   Each icon is a clean 24×24 line/fill SVG, rendered in the archetype's color.
+   Used everywhere: quiz options, genome reveal, profile, cards, tabs, hosts.
+*/
+const ICONS = {
+  // Archetypes
+  maker: `<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M12 19l7-7 3 3-7 7-3-3z"/><path d="M18 13l-1.5-7.5L2 2l3.5 14.5L13 18l5-5z"/><path d="M2 2l7.586 7.586"/><circle cx="11" cy="11" r="2"/></svg>`,
+  curious: `<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/><line x1="11" y1="8" x2="11" y2="14"/><line x1="8" y1="11" x2="14" y2="11"/></svg>`,
+  action: `<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>`,
+  social: `<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>`,
+  // Hosts / sessions
+  pottery: `<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M8 2h8l1 6H7L8 2z"/><path d="M7 8c0 6 2 10 5 10s5-4 5-10"/><line x1="12" y1="18" x2="12" y2="22"/><line x1="9" y1="22" x2="15" y2="22"/></svg>`,
+  code: `<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><polyline points="16 18 22 12 16 6"/><polyline points="8 6 2 12 8 18"/></svg>`,
+  hike: `<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="5" r="2"/><path d="M5 22l3-8 3 4 2-6 3 10"/><path d="M4 14h6"/></svg>`,
+  dance: `<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="4" r="2"/><path d="M9 10l-3 8"/><path d="M15 10l3 8"/><path d="M9 10h6"/><path d="M10 14h4"/></svg>`,
+  bake: `<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M3 11l19-9-9 19-2-8-8-2z"/></svg>`,
+  yoga: `<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="4" r="2"/><path d="M4 14s2-4 8-4 8 4 8 4"/><path d="M12 10v4"/><path d="M8 18l4-4 4 4"/></svg>`,
+  photo: `<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg>`,
+  improv: `<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>`,
+  // UI icons (tabs, actions)
+  home: `<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>`,
+  discover: `<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polygon points="16.24 7.76 14.12 14.12 7.76 16.24 9.88 9.88 16.24 7.76"/></svg>`,
+  messages: `<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>`,
+  profile: `<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>`,
+  // misc
+  location: `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>`,
+  badge: `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="6"/><path d="M15.477 12.89L17 22l-5-3-5 3 1.523-9.11"/></svg>`,
+  lock: `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>`,
+  handshake: `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M20.42 4.58a5.4 5.4 0 0 0-7.65 0l-.77.78-.77-.78a5.4 5.4 0 0 0-7.65 7.65l1.06 1.06L12 21.23l7.77-7.77 1.06-1.06a5.4 5.4 0 0 0-.41-7.82z"/></svg>`,
+  star: `<svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>`,
+  check: `<svg width="10" height="8" viewBox="0 0 10 8" fill="none"><path d="M1 4l2.5 2.5L9 1" stroke="white" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>`,
+  chevron: `<svg width="8" height="14" viewBox="0 0 8 14" fill="none"><path d="M1 1l6 6-6 6" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>`,
+  backArrow: `<svg width="10" height="16" viewBox="0 0 10 16" fill="none"><path d="M8 1L2 8l6 7" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>`,
+};
+
+// Helper: render icon with color
+function ic(key, color='currentColor', size=22){
+  const svg = ICONS[key];
+  if(!svg) return '';
+  return svg.replace(/stroke="currentColor"/g, `stroke="${color}"`).replace(/fill="currentColor"/g, `fill="${color}"`).replace(/width="\d+"/, `width="${size}"`).replace(/height="\d+"/, `height="${size}"`);
+}
+
+// Map host to their session icon key
+const HOST_ICON = {
+  "Aarav K.":"pottery","Jai P.":"code","Priya R.":"hike",
+  "Maya T.":"dance","Sara M.":"bake","Meera S.":"yoga",
+  "Neha K.":"photo","Ravi M.":"improv"
+};
+
+const ARCHETYPES={
+  maker:{name:"Quite Maker",iconKey:"maker",color:"#c060a0",grad:"linear-gradient(135deg,#e8a0c0,#c060a0)",light:"rgba(192,96,160,.1)",tagline:"You find joy in craft and mindful making.",desc:"Calm, creative, introspective. You thrive making tangible things and expressing through materials.",traits:["Creative","Introspective","Patient","Detail-oriented"],activities:["Doodle a one-line drawing daily","Try calligraphy: one word per day","Press leaves & make a nature card","Mini DIY: decorate a jar","Origami folding — 1 paper a day","Keep a 5-min sketch journal"]},
+  curious:{name:"Curious Mind",iconKey:"curious",color:"#6060c0",grad:"linear-gradient(135deg,#a0a0e0,#6060c0)",light:"rgba(96,96,192,.1)",tagline:"You're always exploring and learning.",desc:"Inquisitive, analytical, open to ideas. You love learning through experimentation and discovery.",traits:["Inquisitive","Analytical","Open-minded","Strategic"],activities:["Try a short online brain teaser","Learn one fun TikTok/Zumba step","Read 2 pages of a random book daily","Record a 30-sec voice note check-in","Solve a mini crossword/sudoku","Explore one Wikipedia rabbit hole"]},
+  action:{name:"Action Seeker",iconKey:"action",color:"#e06040",grad:"linear-gradient(135deg,#f0a080,#e06040)",light:"rgba(224,96,64,.1)",tagline:"You love movement, challenge and energy.",desc:"Dynamic, driven, physically expressive. You seek adrenaline, challenge, and movement-based experiences.",traits:["Energetic","Goal-driven","Adventurous","Disciplined"],activities:["Try skipping rope for 100 jumps","5-min dance challenges","Badminton/shuttle drills","Play a card game daily","Juggle 2–3 objects","Practice a yoga balance pose daily"]},
+  social:{name:"Social Spark",iconKey:"social",color:"#4080c0",grad:"linear-gradient(135deg,#80b0e0,#4080c0)",light:"rgba(64,128,192,.1)",tagline:"You energise people and shine in groups.",desc:"Outgoing, expressive, performance-oriented. You love connecting, performing, and creating shared experiences.",traits:["Outgoing","Expressive","Collaborative","Entertaining"],activities:["Try a one-song karaoke with friends","Host a 2-min story circle","Organise a mini potluck","Exchange doodle notes with a buddy","Learn 1 new word in fact daily","Play a board game with 2–3 people"]}
+};
+
+const QUIZ=[
+  {q:"It's a free Saturday — what sounds most appealing?",opts:[{l:"Trying a new craft or making something",a:"maker"},{l:"Going down a rabbit hole learning something new",a:"curious"},{l:"Getting out and being physically active",a:"action"},{l:"Calling friends and making plans together",a:"social"}]},
+  {q:"When you're stressed, you tend to…",opts:[{l:"Draw, journal, or create something",a:"maker"},{l:"Read, watch a documentary, or solve puzzles",a:"curious"},{l:"Go for a run, dance, or do yoga",a:"action"},{l:"Talk it through with someone close",a:"social"}]},
+  {q:"How you prefer to spend your energy?",opts:[{l:"Patiently crafting something beautiful",a:"maker"},{l:"Exploring ideas and experimenting",a:"curious"},{l:"Pushing my body and testing my limits",a:"action"},{l:"Energising a room and bringing people together",a:"social"}]},
+  {q:"Which session would excite you most?",opts:[{l:"A quiet ceramics or painting workshop",a:"maker"},{l:"A photography walk or coding workshop",a:"curious"},{l:"A hiking trail or dance class",a:"action"},{l:"An improv night or open-mic event",a:"social"}]},
+  {q:"You feel most satisfied when…",opts:[{l:"You've made something you can touch and keep",a:"maker"},{l:"You've understood something deeply",a:"curious"},{l:"You've pushed past a physical challenge",a:"action"},{l:"You've made others laugh or feel something",a:"social"}]}
+];
+
+// Photo URLs: Unsplash sourced, each 600px wide, relevant to the activity
+const PHOTOS = {
+  pottery:  "https://images.unsplash.com/photo-1565193566173-7a0ee3dbe261?w=600&q=80&auto=format&fit=crop",
+  coding:   "https://images.unsplash.com/photo-1555099962-4199c345e5dd?w=600&q=80&auto=format&fit=crop",
+  hiking:   "https://images.unsplash.com/photo-1551632811-561732d1e306?w=600&q=80&auto=format&fit=crop",
+  dance:    "https://images.unsplash.com/photo-1547153760-18fc86324498?w=600&q=80&auto=format&fit=crop",
+  baking:   "https://images.unsplash.com/photo-1509440159596-0249088772ff?w=600&q=80&auto=format&fit=crop",
+  yoga:     "https://images.unsplash.com/photo-1544367567-0f2fcb009e0b?w=600&q=80&auto=format&fit=crop",
+  photo:    "https://images.unsplash.com/photo-1452421822248-d4c2b47f0c81?w=600&q=80&auto=format&fit=crop",
+  improv:   "https://images.unsplash.com/photo-1507676184212-d03ab07a01bf?w=600&q=80&auto=format&fit=crop",
+};
+
+const HOST_PHOTOS = {
+  "Aarav K.":  "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=200&q=80&auto=format&fit=crop&crop=face",
+  "Jai P.":    "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=200&q=80&auto=format&fit=crop&crop=face",
+  "Priya R.":  "https://images.unsplash.com/photo-1508214751196-bcfd4ca60f91?w=200&q=80&auto=format&fit=crop&crop=face",
+  "Maya T.":   "https://images.unsplash.com/photo-1517841905240-472988babdf9?w=200&q=80&auto=format&fit=crop&crop=face",
+  "Sara M.":   "https://images.unsplash.com/photo-1438761681033-6461ffad8d80?w=200&q=80&auto=format&fit=crop&crop=face",
+  "Meera S.":  "https://images.unsplash.com/photo-1544005313-94ddf0286df2?w=200&q=80&auto=format&fit=crop&crop=face",
+  "Neha K.":   "https://images.unsplash.com/photo-1531746020798-e6953c6e8e04?w=200&q=80&auto=format&fit=crop&crop=face",
+  "Ravi M.":   "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=200&q=80&auto=format&fit=crop&crop=face",
+};
+
+const SESSION_PHOTO_KEY = {1:'pottery',2:'coding',3:'hiking',4:'dance',5:'baking',6:'yoga',7:'photo',8:'improv'};
+
+const SESSIONS=[
+  {id:1,title:"Wheel Throwing",sub:"Pottery for beginners",host:"Aarav K.",city:"Koramangala",dist:"1.2 km",time:"Sat 10am–12pm",price:650,spots:3,rating:4.9,arc:"maker",date:"24 MAY",tag:"Craft"},
+  {id:2,title:"Generative Art",sub:"p5.js creative coding",host:"Jai P.",city:"Whitefield",dist:"2 km",time:"Fri 7–9:30pm",price:500,spots:5,rating:4.9,arc:"curious",date:"23 MAY",tag:"Digital"},
+  {id:3,title:"Dawn Hike",sub:"Nandi Hills trail",host:"Priya R.",city:"Indiranagar",dist:"0.8 km",time:"Sun 6–9am",price:350,spots:4,rating:4.8,arc:"action",date:"25 MAY",tag:"Outdoors"},
+  {id:4,title:"Salsa Social",sub:"Dance for all levels",host:"Maya T.",city:"HSR Layout",dist:"0.6 km",time:"Wed 7–9pm",price:400,spots:6,rating:4.7,arc:"social",date:"21 MAY",tag:"Dance"},
+  {id:5,title:"Sourdough Sunday",sub:"Artisan baking class",host:"Sara M.",city:"Jayanagar",dist:"1.6 km",time:"Sat 9–11:30am",price:800,spots:2,rating:5.0,arc:"maker",date:"24 MAY",tag:"Food"},
+  {id:6,title:"Yin Yoga Flow",sub:"Restorative evening",host:"Meera S.",city:"Banaswadi",dist:"1.1 km",time:"Thu 6:30–8pm",price:300,spots:8,rating:4.8,arc:"action",date:"22 MAY",tag:"Wellness"},
+  {id:7,title:"Photography Walk",sub:"Golden hour streets",host:"Neha K.",city:"Malleshwaram",dist:"1.4 km",time:"Sun 5–7pm",price:400,spots:5,rating:4.8,arc:"curious",date:"25 MAY",tag:"Photo"},
+  {id:8,title:"Improv Night",sub:"Storytelling & play",host:"Ravi M.",city:"Koramangala",dist:"0.9 km",time:"Sat 6–8pm",price:450,spots:7,rating:4.9,arc:"social",date:"24 MAY",tag:"Theatre"}
+];
+
+// Photo img tag for a session
+function sImg(id, h=180){
+  const key=SESSION_PHOTO_KEY[id]||'pottery';
+  const url=PHOTOS[key];
+  // Fallback gradient per activity
+  const fallbacks={pottery:'linear-gradient(160deg,#C47840,#8B4513)',coding:'linear-gradient(160deg,#3060CC,#1A3080)',hiking:'linear-gradient(160deg,#50a855,#2A6035)',dance:'linear-gradient(160deg,#cc44cc,#8020A0)',baking:'linear-gradient(160deg,#d4804a,#8B4020)',yoga:'linear-gradient(160deg,#40a0a0,#2A6868)',photo:'linear-gradient(160deg,#8855bb,#5030A0)',improv:'linear-gradient(160deg,#4a90a4,#205070)'};
+  const fb=fallbacks[key]||'linear-gradient(160deg,#c060a0,#9b6fc0)';
+  return `<img src="${url}" style="width:100%;height:${h}px;object-fit:cover;display:block;" loading="lazy" onerror="this.style.display='none';this.parentElement.style.background='${fb}'"/>`;
+}
+
+// Host avatar img tag - returns just the img element
+function hImg(hostKey, size=28){
+  const url=HOST_PHOTOS[hostKey];
+  const name=(HOSTS[hostKey]?.fullName||hostKey);
+  const initial=name[0];
+  const grad=HOSTS[hostKey]?.avatarGrad||'linear-gradient(135deg,#e8a0c0,#9b6fc0)';
+  if(!url) return `<div style="width:${size}px;height:${size}px;border-radius:50%;background:${grad};display:flex;align-items:center;justify-content:center;color:white;font-size:${Math.round(size*.38)}px;font-weight:700;flex-shrink:0;">${initial}</div>`;
+  return `<img src="${url}" style="width:${size}px;height:${size}px;border-radius:50%;object-fit:cover;flex-shrink:0;display:block;" loading="lazy" onerror="this.outerHTML='<div style=\\'width:${size}px;height:${size}px;border-radius:50%;background:${grad};display:flex;align-items:center;justify-content:center;color:white;font-size:${Math.round(size*.38)}px;font-weight:700;flex-shrink:0;\\'>${initial}</div>'"/>`;
+}
+
+/* ─────────────────────────────────────────
+   STATE
+───────────────────────────────────────── */
+let S={sc:'splash',prev:'splash',user:null,genome:null,qs:0,qscores:{maker:0,curious:0,action:0,social:0},acts:0,tab:'home',session:null,guests:1,sdate:0,paymethod:'upi',booking:null,hostkey:null,hostab:'about',dtab:'info',cat:'All',city:''};
+
+/* ─────────────────────────────────────────
+   ROUTING
+───────────────────────────────────────── */
+function goTo(id){
+  document.querySelectorAll('.sc').forEach(s=>s.classList.remove('on'));
+  document.getElementById('sc-'+id).classList.add('on');
+  S.prev=S.sc; S.sc=id;
+  const r={splash:rSplash,signup:rSignup,quiz:rQuiz,genome:rGenome,main:rMain,detail:rDetail,host:rHost,booking:rBooking,payment:rPayment,confirm:rConfirm};
+  if(r[id]) r[id]();
+}
+function goBack(){const m={host:'detail',detail:'main',booking:'detail',payment:'booking',signup:'splash',quiz:'signup',genome:'quiz'};goTo(m[S.sc]||'main');}
+
+/* ─────────────────────────────────────────
+   SPLASH / SIGNUP
+───────────────────────────────────────── */
+const CITIES=["Koramangala","Indiranagar","HSR Layout","Jayanagar","Whitefield","Banaswadi","Malleshwaram"];
+function rSplash(){}
+function rSignup(){
+  S.city='';
+  document.getElementById('city-pills').innerHTML=CITIES.map(c=>`
+    <button onclick="pickCity('${c}')" id="cp-${c.replace(/ /g,'_')}" style="padding:8px 16px;border-radius:20px;background:rgba(255,255,255,.7);backdrop-filter:blur(8px);border:1.5px solid rgba(192,96,160,0);font-size:14px;color:#6b5580;font-weight:500;cursor:pointer;transition:all .15s;">${c}</button>`).join('');
+}
+function pickCity(c){
+  S.city=c;
+  CITIES.forEach(ci=>{
+    const b=document.getElementById('cp-'+ci.replace(/ /g,'_'));
+    if(b){b.style.borderColor=ci===c?'#c060a0':'rgba(192,96,160,0)';b.style.background=ci===c?'rgba(192,96,160,.15)':'rgba(255,255,255,.7)';b.style.color=ci===c?'#c060a0':'#6b5580';}
+  });
+}
+function doSignup(){
+  const n=document.getElementById('inp-name').value.trim(),e=document.getElementById('inp-email').value.trim();
+  if(!n||!e||!S.city) return;
+  S.user={name:n,email:e,city:S.city};
+  S.qs=0;S.qscores={maker:0,curious:0,action:0,social:0};
+  goTo('quiz');
+}
+
+/* ─────────────────────────────────────────
+   QUIZ
+───────────────────────────────────────── */
+function rQuiz(){
+  const q=QUIZ[S.qs];
+  document.getElementById('quiz-lbl').textContent=`Question ${S.qs+1} of ${QUIZ.length}`;
+  document.getElementById('quiz-bar').style.width=`${((S.qs+1)/QUIZ.length)*100}%`;
+  document.getElementById('quiz-dots').innerHTML=QUIZ.map((_,i)=>`<div style="width:${i===S.qs?20:6}px;height:6px;border-radius:3px;background:${i<=S.qs?'#c060a0':'rgba(192,96,160,.25)'};transition:all .3s;"></div>`).join('');
+  document.getElementById('quiz-q').textContent=q.q;
+  document.getElementById('quiz-opts').innerHTML=q.opts.map((o,i)=>{
+    const a=ARCHETYPES[o.a];
+    return `<button class="qopt" onclick="pickOpt('${o.a}')" style="animation:fadeUp .35s ${i*.06}s both;">
+      <div class="qopt-ic" style="background:${a.light};color:${a.color};">${ic(a.iconKey, a.color, 20)}</div>
+      <span class="qopt-tx">${o.l}</span>
+      <span style="margin-left:auto;opacity:.22;flex-shrink:0;color:#1c0d2e;">${ic('chevron','#1c0d2e',8)}</span>
+    </button>`;
+  }).join('');
+}
+function pickOpt(a){
+  S.qscores[a]++;
+  if(S.qs<QUIZ.length-1){S.qs++;rQuiz();}
+  else{const s=Object.entries(S.qscores).sort((a,b)=>b[1]-a[1]);S.genome={primary:s[0][0],secondary:s[1][0]};S.acts=0;goTo('genome');}
+}
+
+/* ─────────────────────────────────────────
+   GENOME REVEAL
+───────────────────────────────────────── */
+function rGenome(){
+  const p=ARCHETYPES[S.genome.primary],sc=ARCHETYPES[S.genome.secondary];
+  const arcEl=document.getElementById('genome-arc-icon');
+  arcEl.style.background=p.grad;
+  arcEl.style.color='white';
+  arcEl.innerHTML=ic(p.iconKey,'white',26);
+  document.getElementById('genome-arc-name').textContent=p.name;
+  document.getElementById('genome-arc-desc').textContent=p.desc;
+  document.getElementById('genome-traits').innerHTML=p.traits.map(t=>`<span style="padding:5px 12px;border-radius:20px;background:${p.light};color:${p.color};font-size:12px;font-weight:600;">${t}</span>`).join('');
+  rGenomeActs();
+}
+function rGenomeActs(){
+  const p=ARCHETYPES[S.genome.primary];
+  document.getElementById('genome-acts').innerHTML=p.activities.map((a,i)=>{
+    const u=i<=S.acts;
+    return `<button onclick="unlockAct(${i})" style="
+      padding:12px 16px;border-radius:14px;
+      background:${u?'rgba(255,255,255,.82)':'rgba(255,255,255,.3)'};
+      backdrop-filter:blur(12px);border:none;
+      display:flex;align-items:center;gap:12px;
+      text-align:left;width:100%;cursor:pointer;
+      opacity:${u?1:.5};transition:all .25s;">
+      <div style="width:26px;height:26px;border-radius:50%;background:${u?p.grad:'rgba(255,255,255,.6)'};display:flex;align-items:center;justify-content:center;font-size:11px;color:${u?'#fff':'rgba(0,0,0,.3)'};font-weight:700;flex-shrink:0;">${u?'✓':i+1}</div>
+      <span style="font-size:14px;color:${u?'#1c0d2e':'rgba(28,13,46,.5)'};letter-spacing:-.1px;">${a}</span>
+      ${i===S.acts?`<span style="margin-left:auto;font-size:12px;color:${p.color};font-weight:600;">Tap →</span>`:''}
+    </button>`;
+  }).join('');
+}
+function unlockAct(i){if(i===S.acts)S.acts=Math.min(S.acts+1,ARCHETYPES[S.genome.primary].activities.length-1);rGenomeActs();}
+
+/* ─────────────────────────────────────────
+   MAIN TABS
+───────────────────────────────────────── */
+function switchTab(t){
+  S.tab=t;
+  const tabs=['home','discover','messages','profile'];
+  const keys=['home','discover','messages','profile'];
+  tabs.forEach((id,i)=>{
+    const btn=document.getElementById('tab-'+id);
+    const ic_el=document.getElementById('tib-'+id);
+    const active=id===t;
+    btn.classList.toggle('on',active);
+    const color=active?'#c060a0':'#9980b8';
+    if(ic_el) ic_el.innerHTML=ic(keys[i],color,24);
+  });
+  rMain();
+}
+function rMain(){
+  if(S.tab==='home') rHome();
+  else if(S.tab==='discover') rDiscover();
+  else if(S.tab==='messages') rMsgs();
+  else rProfile();
+}
+
+/* HOME */
+function rHome(){
+  const u=S.user,g=S.genome,p=ARCHETYPES[g.primary];
+  const matched=SESSIONS.filter(s=>s.arc===g.primary).slice(0,2);
+  const cats=['All','Craft','Outdoors','Digital','Dance','Food','Wellness','Photo'];
+  const filtered=S.cat==='All'?SESSIONS:SESSIONS.filter(s=>s.tag===S.cat);
+  document.getElementById('main-body').innerHTML=`
+    <!-- HEADER BLOB -->
+    <div style="position:relative;overflow:hidden;padding:0 24px 28px;background:linear-gradient(170deg,#fff0f8 0%,#f4d8ff 50%,#ffe8f4 100%);">
+      <div style="position:absolute;top:-80px;right:-60px;width:260px;height:260px;border-radius:50%;background:radial-gradient(circle,rgba(220,160,240,.55) 0%,transparent 70%);"></div>
+      <div style="position:absolute;bottom:-40px;left:-30px;width:200px;height:200px;border-radius:50%;background:radial-gradient(circle,rgba(255,160,200,.4) 0%,transparent 70%);"></div>
+      <div style="position:relative;z-index:1;display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:14px;">
+        <div>
+          <p style="font-size:13px;color:#9980b8;font-weight:400;margin-bottom:3px;letter-spacing:.2px;">Good morning</p>
+          <h1 style="font-family:'Satoshi','DM Sans',sans-serif;font-size:32px;font-weight:700;color:#1c0d2e;letter-spacing:-.5px;line-height:1.1;">${u.name} 👋</h1>
+        </div>
+        <div style="width:40px;height:40px;border-radius:50%;background:linear-gradient(135deg,#f093c0,#c060a0);display:flex;align-items:center;justify-content:center;color:white;font-weight:700;font-size:16px;box-shadow:0 4px 14px rgba(192,96,160,.4);">${u.name[0]}</div>
+      </div>
+      <div style="position:relative;z-index:1;background:rgba(255,255,255,.6);backdrop-filter:blur(12px);border-radius:14px;padding:10px 14px;display:flex;align-items:center;gap:8px;">
+        <span style="color:#9980b8;display:flex;align-items:center;flex-shrink:0;">${ic('location','#9980b8',14)}</span>
+        <span style="font-size:14px;color:#6b5580;flex:1;">${u.city} <span style="color:#4a9a6a;font-weight:600;">· 2km active</span></span>
+        <span style="padding:3px 10px;border-radius:10px;background:${p.light};color:${p.color};font-size:12px;font-weight:600;display:inline-flex;align-items:center;gap:4px;flex-shrink:0;">${ic(p.iconKey,p.color,11)} ${p.name}</span>
+      </div>
+    </div>
+
+    <!-- FOR YOU -->
+    <div style="padding:20px 24px 8px;display:flex;justify-content:space-between;align-items:baseline;">
+      <h2 style="font-family:'Satoshi','DM Sans',sans-serif;font-size:22px;font-weight:700;color:#1c0d2e;letter-spacing:-.3px;">✦ For you</h2>
+      <span style="font-size:14px;color:#c060a0;font-weight:500;cursor:pointer;">See all</span>
+    </div>
+    <div style="display:flex;gap:14px;overflow-x:auto;padding:4px 24px 20px;scrollbar-width:none;">
+      ${matched.map(s=>bigCard(s,g)).join('')}
+    </div>
+
+    <!-- FILTER -->
+    <div style="padding:0 24px;display:flex;justify-content:space-between;align-items:baseline;margin-bottom:10px;">
+      <h2 style="font-family:'Satoshi','DM Sans',sans-serif;font-size:22px;font-weight:700;color:#1c0d2e;letter-spacing:-.3px;">All sessions</h2>
+      <span style="font-size:14px;color:#c060a0;font-weight:500;cursor:pointer;">See all</span>
+    </div>
+    <div style="display:flex;gap:8px;overflow-x:auto;padding:0 24px 14px;scrollbar-width:none;">
+      ${cats.map(c=>`<button onclick="setCat('${c}')" style="padding:7px 16px;border-radius:20px;background:${S.cat===c?'linear-gradient(135deg,#f093c0,#9b6fc0)':'rgba(255,255,255,.8)'};color:${S.cat===c?'#fff':'#6b5580'};font-size:13px;font-weight:500;border:none;cursor:pointer;white-space:nowrap;backdrop-filter:blur(8px);box-shadow:${S.cat===c?'0 4px 12px rgba(192,96,160,.3)':'none'};transition:all .2s;">${c}</button>`).join('')}
+    </div>
+    <div style="padding:0 24px;display:grid;grid-template-columns:1fr 1fr;gap:14px;padding-bottom:16px;">
+      ${filtered.map(s=>smallCard(s,g)).join('')}
+    </div>`;
+}
+function setCat(c){S.cat=c;rMain();}
+
+function bigCard(s,g){
+  const h=HOSTS[s.host];
+  const isMatch=s.arc===g.primary;
+  return `<div onclick="openSession(${s.id})" style="background:#fff;border-radius:24px;overflow:hidden;flex-shrink:0;width:76%;box-shadow:0 8px 32px rgba(0,0,0,.13);cursor:pointer;transition:transform .15s;" onmousedown="this.style.transform='scale(.97)'" onmouseup="this.style.transform='scale(1)'">
+    <div style="height:195px;position:relative;overflow:hidden;background:#d8d0e8;">
+      <img src="${PHOTOS[SESSION_PHOTO_KEY[s.id]||'pottery']}" style="width:100%;height:195px;object-fit:cover;display:block;" loading="lazy"onerror="this.style.background='linear-gradient(160deg,#c8b8e8,#a890c8)';this.removeAttribute('src')" />
+      <div style="position:absolute;inset:0;background:linear-gradient(to bottom,rgba(0,0,0,.04) 0%,transparent 40%,rgba(0,0,0,.25) 100%);"></div>
+      <div style="position:absolute;top:12px;left:12px;background:rgba(255,255,255,.96);backdrop-filter:blur(12px);border-radius:12px;padding:6px 10px;text-align:center;box-shadow:0 2px 8px rgba(0,0,0,.12);">
+        <div style="font-family:'Satoshi','DM Sans',sans-serif;font-size:20px;font-weight:800;color:#c060a0;line-height:1;">${s.date.split(' ')[0]}</div>
+        <div style="font-size:8px;font-weight:700;color:#c060a0;letter-spacing:.6px;margin-top:1px;">${s.date.split(' ')[1]}</div>
+      </div>
+      ${isMatch?`<div style="position:absolute;top:12px;right:12px;padding:4px 11px;border-radius:20px;background:linear-gradient(135deg,#f093c0,#9b6fc0);color:white;font-size:10px;font-weight:700;">✦ Your match</div>`:''}
+    </div>
+    <div style="padding:14px 16px 17px;">
+      <h3 style="font-family:'Satoshi','DM Sans',sans-serif;font-size:19px;font-weight:700;color:#1c0d2e;margin-bottom:2px;letter-spacing:-.2px;line-height:1.2;">${s.title}</h3>
+      <p style="font-size:12px;color:#9980b8;margin-bottom:12px;letter-spacing:-.1px;">${s.sub}</p>
+      <div style="display:flex;align-items:center;gap:8px;margin-bottom:13px;">
+        ${hImg(s.host,27)}
+        <span style="font-size:13px;color:#3d2a52;font-weight:500;letter-spacing:-.1px;">${h?h.fullName:s.host}</span>
+      </div>
+      <div style="display:flex;justify-content:space-between;align-items:center;">
+        <div style="display:flex;align-items:center;gap:4px;">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="#f7c948"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+          <span style="font-size:13px;color:#6b5580;font-weight:500;font-family:'Satoshi',sans-serif;display:inline-flex;align-items:center;gap:3px;"><svg width="12" height="12" viewBox="0 0 24 24" fill="#f7c948"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg> ${s.rating} &middot; ${s.spots} spots</span>
+        </div>
+        <div style="padding:7px 16px;border-radius:20px;background:linear-gradient(135deg,#f093c0,#9b6fc0);color:white;font-size:13px;font-weight:600;letter-spacing:-.1px;">₹${s.price}</div>
+      </div>
+    </div>
+  </div>`;
+}
+
+function smallCard(s,g){
+  const h=HOSTS[s.host];
+  return `<div onclick="openSession(${s.id})" style="background:#fff;border-radius:20px;overflow:hidden;box-shadow:0 4px 20px rgba(0,0,0,.1);cursor:pointer;transition:transform .12s;" onmousedown="this.style.transform='scale(.96)'" onmouseup="this.style.transform='scale(1)'">
+    <div style="height:122px;position:relative;overflow:hidden;background:#d8d0e8;">
+      <img src="${PHOTOS[SESSION_PHOTO_KEY[s.id]||'pottery']}" style="width:100%;height:122px;object-fit:cover;display:block;" loading="lazy"onerror="this.style.background='linear-gradient(160deg,#c8b8e8,#a890c8)';this.removeAttribute('src')" />
+      <div style="position:absolute;inset:0;background:linear-gradient(to bottom,transparent 50%,rgba(0,0,0,.22));"></div>
+      <div style="position:absolute;top:9px;left:9px;background:rgba(255,255,255,.96);backdrop-filter:blur(10px);border-radius:9px;padding:4px 8px;text-align:center;box-shadow:0 1px 5px rgba(0,0,0,.1);">
+        <div style="font-family:'Satoshi','DM Sans',sans-serif;font-size:15px;font-weight:800;color:#c060a0;line-height:1;">${s.date.split(' ')[0]}</div>
+        <div style="font-size:7px;font-weight:700;color:#c060a0;letter-spacing:.5px;margin-top:1px;">${s.date.split(' ')[1]}</div>
+      </div>
+    </div>
+    <div style="padding:11px 12px 13px;">
+      <h3 style="font-family:'Satoshi','DM Sans',sans-serif;font-size:15px;font-weight:700;color:#1c0d2e;margin-bottom:4px;letter-spacing:-.2px;line-height:1.2;">${s.title}</h3>
+      <div style="display:flex;align-items:center;gap:5px;margin-bottom:9px;">
+        ${hImg(s.host,18)}
+        <span style="font-size:11px;color:#9980b8;letter-spacing:-.1px;">${s.host}</span>
+      </div>
+      <div style="display:flex;justify-content:space-between;align-items:center;">
+        <span style="font-family:'Satoshi','DM Sans',sans-serif;font-size:15px;font-weight:800;color:#c060a0;">₹${s.price}</span>
+        <span style="font-size:10px;color:#9980b8;background:#f4f0fa;padding:3px 8px;border-radius:8px;font-weight:500;">${s.dist}</span>
+      </div>
+    </div>
+  </div>`;
+}
+
+/* DISCOVER */
+function rDiscover(){
+  const g=S.genome,p=ARCHETYPES[g.primary];
+  document.getElementById('main-body').innerHTML=`
+    <div style="background:linear-gradient(170deg,#f8f0ff 0%,#f0d8f8 45%,#ffe8f4 100%);padding:20px 24px 28px;position:relative;overflow:hidden;">
+      <div style="position:absolute;top:-60px;right:-40px;width:240px;height:240px;border-radius:50%;background:radial-gradient(circle,rgba(220,160,240,.5) 0%,transparent 70%);"></div>
+      <h1 style="font-family:'Satoshi','DM Sans',sans-serif;font-size:30px;font-weight:800;color:#1c0d2e;letter-spacing:-.4px;margin-bottom:4px;position:relative;z-index:1;">Discover</h1>
+      <p style="font-size:14px;color:#9980b8;position:relative;z-index:1;">Hosts matched to your ${p.name} profile</p>
+    </div>
+    <div style="padding:16px 24px;">
+      ${SESSIONS.filter(s=>s.arc===g.primary).map(s=>{
+        const h=HOSTS[s.host];
+        return `<button onclick="openSession(${s.id})" style="width:100%;background:#fff;border:none;border-radius:20px;padding:0;margin-bottom:14px;cursor:pointer;text-align:left;box-shadow:0 4px 18px rgba(0,0,0,.09);overflow:hidden;transition:transform .1s;" onmousedown="this.style.transform='scale(.98)'" onmouseup="this.style.transform='scale(1)'">
+          <div style="display:flex;gap:0;">
+            <div style="width:90px;height:90px;flex-shrink:0;overflow:hidden;position:relative;">
+              <img src="${PHOTOS[SESSION_PHOTO_KEY[s.id]||'pottery']}" style="width:90px;height:90px;object-fit:cover;display:block;" loading="lazy"onerror="this.style.background='linear-gradient(160deg,#c8b8e8,#a890c8)';this.removeAttribute('src')" />
+            </div>
+            <div style="flex:1;padding:14px 14px 14px 16px;">
+              <div style="font-family:'Satoshi','DM Sans',sans-serif;font-size:17px;font-weight:700;color:#1c0d2e;margin-bottom:2px;letter-spacing:-.2px;line-height:1.2;">${s.title}</div>
+              <div style="display:flex;align-items:center;gap:6px;margin-bottom:7px;">
+                ${hImg(s.host,20)}
+                <span style="font-size:12px;color:#9980b8;">${h?h.fullName:s.host} · ${s.city}</span>
+              </div>
+              <div style="display:flex;gap:10px;align-items:center;">
+                <span style="font-family:'Satoshi','DM Sans',sans-serif;font-size:15px;font-weight:800;color:#c060a0;">₹${s.price}</span>
+                <div style="display:flex;align-items:center;gap:3px;"><svg width="11" height="11" viewBox="0 0 24 24" fill="#f7c948"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg><span style="font-size:11px;color:#9980b8;font-weight:500;font-family:'Satoshi',sans-serif;display:inline-flex;align-items:center;gap:2px;"><svg width="10" height="10" viewBox="0 0 24 24" fill="#f7c948"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>${s.rating}</span></div>
+                <span style="font-size:11px;color:#9980b8;">${s.dist}</span>
+              </div>
+            </div>
+          </div>
+        </button>`;
+      }).join('')}
+    </div>`;
+}
+
+/* MESSAGES */
+let chatMsgs=[{f:"them",t:"Hey! Booking confirmed — so excited to have you 🎉",ts:"10:02"},{f:"them",t:"Studio: 14B, 5th Cross, Koramangala 4th Block. Buzzer: 'Clay Room'.",ts:"10:03"},{f:"me",t:"Perfect! Do I need to bring anything?",ts:"10:08"},{f:"them",t:"Just yourself and old clothes. Clay, aprons, tools — all here!",ts:"10:10"}];
+let msgV='chat';
+function rMsgs(){
+  document.getElementById('main-body').innerHTML=`
+    <div style="background:linear-gradient(170deg,#fff0f8 0%,#f4e0ff 50%,#ffe8f4 100%);padding:20px 24px 24px;position:relative;overflow:hidden;">
+      <div style="position:absolute;top:-50px;right:-50px;width:200px;height:200px;border-radius:50%;background:radial-gradient(circle,rgba(240,147,192,.5) 0%,transparent 70%);"></div>
+      <h1 style="font-family:'Satoshi','DM Sans',sans-serif;font-size:30px;font-weight:800;color:#1c0d2e;letter-spacing:-.4px;margin-bottom:16px;position:relative;z-index:1;">Messages</h1>
+      <div style="display:flex;background:rgba(255,255,255,.5);backdrop-filter:blur(10px);border-radius:14px;padding:3px;position:relative;z-index:1;">
+        <button onclick="setMV('chat')" style="flex:1;height:34px;border-radius:11px;border:none;background:${msgV==='chat'?'#fff':'transparent'};font-size:14px;font-weight:${msgV==='chat'?600:500};color:${msgV==='chat'?'#1c0d2e':'#9980b8'};cursor:pointer;box-shadow:${msgV==='chat'?'0 1px 4px rgba(0,0,0,.1)':'none'};transition:all .2s;">💬 Chat</button>
+        <button onclick="setMV('qr')" style="flex:1;height:34px;border-radius:11px;border:none;background:${msgV==='qr'?'#fff':'transparent'};font-size:14px;font-weight:${msgV==='qr'?600:500};color:${msgV==='qr'?'#1c0d2e':'#9980b8'};cursor:pointer;box-shadow:${msgV==='qr'?'0 1px 4px rgba(0,0,0,.1)':'none'};transition:all .2s;">📱 QR Code</button>
+      </div>
+    </div>
+    <div id="msg-inner" style="padding:16px 24px;display:flex;flex-direction:column;gap:10px;"></div>`;
+  rMsgInner();
+}
+function setMV(v){msgV=v;rMsgs();}
+function rMsgInner(){
+  const c=document.getElementById('msg-inner'); if(!c) return;
+  const h=HOSTS["Aarav K."];
+  if(msgV==='chat'){
+    c.innerHTML=`
+      <div style="background:#fff;border-radius:20px;overflow:hidden;box-shadow:0 4px 18px rgba(0,0,0,.09);">
+        <div style="padding:14px 16px;display:flex;align-items:center;gap:10px;border-bottom:.5px solid rgba(0,0,0,.07);">
+          <div style="width:38px;height:38px;border-radius:50%;background:${h.avatarGrad};display:flex;align-items:center;justify-content:center;color:white;">${ic('pottery','white',18)}</div>
+          <div>
+            <div style="font-size:15px;font-weight:600;color:#1c0d2e;letter-spacing:-.2px;">Aarav Kumar</div>
+            <div style="font-size:12px;color:#4a9a6a;font-weight:500;">● Active now · Koramangala</div>
+          </div>
+        </div>
+        <div id="c-msgs" style="padding:14px 16px;display:flex;flex-direction:column;gap:9px;max-height:220px;overflow-y:auto;">
+          ${chatMsgs.map(m=>`
+            <div style="display:flex;flex-direction:column;align-items:${m.f==='me'?'flex-end':'flex-start'};">
+              <div style="max-width:77%;padding:10px 14px;border-radius:${m.f==='me'?'16px 4px 16px 16px':'4px 16px 16px 16px'};background:${m.f==='me'?'linear-gradient(135deg,#f093c0,#9b6fc0)':'#f8f4ff'};color:${m.f==='me'?'white':'#1c0d2e'};font-size:14px;line-height:1.45;letter-spacing:-.1px;">
+                ${m.t}
+                <div style="font-size:10px;margin-top:4px;opacity:.55;text-align:${m.f==='me'?'right':'left'};">${m.ts}</div>
+              </div>
+            </div>`).join('')}
+        </div>
+        <div style="padding:10px 12px;display:flex;gap:8px;border-top:.5px solid rgba(0,0,0,.07);">
+          <div style="flex:1;background:#f8f4ff;border-radius:22px;height:40px;display:flex;align-items:center;padding:0 14px;">
+            <input id="c-inp" placeholder="Message" onkeydown="if(event.key==='Enter')sendMsg()" style="flex:1;background:none;border:none;outline:none;font-size:15px;color:#1c0d2e;letter-spacing:-.1px;"/>
+          </div>
+          <button onclick="sendMsg()" style="width:40px;height:40px;border-radius:50%;background:linear-gradient(135deg,#f093c0,#9b6fc0);border:none;color:white;font-size:18px;display:flex;align-items:center;justify-content:center;flex-shrink:0;cursor:pointer;">↑</button>
+        </div>
+      </div>`;
+    setTimeout(()=>{const cm=document.getElementById('c-msgs');if(cm)cm.scrollTop=9999;},50);
+  } else {
+    c.innerHTML=`
+      <div style="background:#fff;border-radius:22px;padding:24px;display:flex;flex-direction:column;align-items:center;box-shadow:0 4px 20px rgba(0,0,0,.08);">
+        <div style="padding:14px;background:#f8f4ff;border-radius:18px;margin-bottom:14px;">${qrSVG(130)}</div>
+        <div style="font-family:'Satoshi','DM Sans',sans-serif;font-size:18px;font-weight:800;color:#1c0d2e;margin-bottom:4px;letter-spacing:-.3px;">Wheel Throwing · 24 MAY</div>
+        <div style="font-size:13px;color:#9980b8;margin-bottom:14px;">Aarav Kumar · Koramangala Studio</div>
+        <button class="pill-dark" style="width:auto;padding:0 28px;height:46px;border-radius:23px;">Scan at session start</button>
+      </div>`;
+  }
+}
+function sendMsg(){
+  const inp=document.getElementById('c-inp'); if(!inp||!inp.value.trim()) return;
+  chatMsgs.push({f:'me',t:inp.value.trim(),ts:new Date().toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'})});
+  inp.value='';rMsgInner();
+  setTimeout(()=>{chatMsgs.push({f:'them',t:'See you there 🙌 Brilliant!',ts:new Date().toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'})});rMsgInner();},1000);
+}
+
+/* PROFILE */
+function rProfile(){
+  const u=S.user,g=S.genome,p=ARCHETYPES[g.primary];
+  document.getElementById('main-body').innerHTML=`
+    <div style="background:${p.grad};padding:32px 24px 28px;position:relative;overflow:hidden;text-align:center;">
+      <div style="position:absolute;top:-60px;left:50%;transform:translateX(-50%);width:300px;height:300px;border-radius:50%;background:radial-gradient(circle,rgba(255,255,255,.25) 0%,transparent 65%);"></div>
+      <div style="position:relative;z-index:1;">
+        <div style="width:72px;height:72px;border-radius:24px;background:rgba(255,255,255,.25);backdrop-filter:blur(8px);margin:0 auto 12px;display:flex;align-items:center;justify-content:center;font-size:28px;font-weight:800;color:white;">${u.name[0]}</div>
+        <h1 style="font-family:'Satoshi','DM Sans',sans-serif;font-size:26px;font-weight:800;color:white;letter-spacing:-.4px;">${u.name}</h1>
+        <p style="font-size:14px;color:rgba(255,255,255,.75);margin-top:2px;">${u.city}, Bengaluru</p>
+        <div style="display:flex;justify-content:center;gap:20px;margin-top:16px;">
+          ${[['4.9','Rating'],['1','Sessions'],['0','Badges']].map(([v,l])=>`<div style="text-align:center;"><div style="font-family:'Satoshi','DM Sans',sans-serif;font-size:24px;font-weight:800;color:white;">${v}</div><div style="font-size:11px;color:rgba(255,255,255,.7);font-weight:500;">${l}</div></div>`).join('')}
+        </div>
+      </div>
+    </div>
+    <!-- Genome badge -->
+    <div style="padding:16px 24px;background:#fff;border-bottom:.5px solid rgba(0,0,0,.07);">
+      <div style="display:flex;gap:12px;align-items:center;">
+        <div style="width:46px;height:46px;border-radius:14px;background:${p.grad};display:flex;align-items:center;justify-content:center;flex-shrink:0;color:white;">${ic(p.iconKey,'white',22)}</div>
+        <div>
+          <div style="font-size:12px;color:#9980b8;font-weight:500;margin-bottom:2px;text-transform:uppercase;letter-spacing:.5px;">Your Hobby Genome</div>
+          <div style="font-family:'Satoshi','DM Sans',sans-serif;font-size:18px;font-weight:700;color:#1c0d2e;letter-spacing:-.2px;">${p.name}</div>
+        </div>
+        <button onclick="goTo('quiz')" style="margin-left:auto;padding:6px 14px;border-radius:10px;background:${p.light};color:${p.color};border:none;font-size:12px;font-weight:600;cursor:pointer;">Retake</button>
+      </div>
+    </div>
+    <!-- Actions -->
+    ${[{key:'badge',t:'Badges earned',v:'0'},{key:'lock',t:'Privacy settings',v:''},{key:'handshake',t:'Material lending network',v:''}].map(a=>`
+    <div style="padding:16px 24px;background:#fff;border-bottom:.5px solid rgba(0,0,0,.07);display:flex;align-items:center;gap:14px;cursor:pointer;">
+      <div style="width:38px;height:38px;border-radius:11px;background:#f8f4ff;display:flex;align-items:center;justify-content:center;color:#9980b8;flex-shrink:0;">${ic(a.key,'#9980b8',18)}</div>
+      <span style="font-size:16px;color:#1c0d2e;flex:1;">${a.t}</span>
+      <span style="font-size:15px;color:#9980b8;">${a.v||ic('chevron','#9980b8',8)}</span>
+    </div>`).join('')}`;
+}
+
+/* ─────────────────────────────────────────
+   SESSION DETAIL
+───────────────────────────────────────── */
+function openSession(id){S.session=SESSIONS.find(s=>s.id===id);goTo('detail');}
+function rDetail(){
+  const s=S.session,g=S.genome,h=HOSTS[s.host];
+  const photoKey=SESSION_PHOTO_KEY[s.id]||'pottery';
+  const photoUrl=PHOTOS[photoKey];
+  const FBG={pottery:'linear-gradient(160deg,#FFCBA4,#E8622A)',coding:'linear-gradient(160deg,#B3CFFF,#3060CC)',hiking:'linear-gradient(160deg,#AEEFC0,#2A8040)',dance:'linear-gradient(160deg,#F0B8F8,#9030C0)',baking:'linear-gradient(160deg,#FFD4A0,#E08040)',yoga:'linear-gradient(160deg,#A0E8E8,#2A9090)',photo:'linear-gradient(160deg,#D0B0F8,#7040C0)',improv:'linear-gradient(160deg,#A0D4E8,#2A7898)'};
+  const fbg=FBG[photoKey]||'linear-gradient(160deg,#e0c8f0,#b090d0)';
+
+  // Hero: gradient bg always visible, img fades in on load, fades to 0 on error so gradient shows
+  document.getElementById('detail-hero').innerHTML=`
+    <div style="position:absolute;inset:0;background:${fbg};"></div>
+    <img src="${photoUrl}" style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover;opacity:1;transition:opacity .4s;" loading="eager" onerror="this.style.opacity=0"/>
+    <div style="position:absolute;inset:0;background:linear-gradient(to bottom,rgba(0,0,0,.15) 0%,transparent 38%,rgba(0,0,0,.6) 100%);"></div>
+    <button onclick="goTo('main')" style="position:absolute;top:14px;left:14px;z-index:10;width:36px;height:36px;border-radius:50%;background:rgba(255,255,255,.2);backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);border:none;color:white;display:flex;align-items:center;justify-content:center;cursor:pointer;">
+      <svg width="10" height="16" viewBox="0 0 10 16" fill="none"><path d="M8 1L2 8l6 7" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+    </button>
+    <div style="position:absolute;bottom:20px;left:20px;right:20px;">
+      <h2 style="font-family:'Satoshi','DM Sans',sans-serif;font-size:30px;font-weight:800;color:white;line-height:1.1;margin-bottom:5px;text-shadow:0 2px 12px rgba(0,0,0,.45);">${s.title}</h2>
+      <p style="font-size:13px;color:rgba(255,255,255,.85);font-family:'Satoshi','DM Sans',sans-serif;">${s.sub} &middot; ${s.city}</p>
+    </div>`;
+  document.getElementById('detail-cta').textContent='Book for \u20b9'+s.price;
+
+  // SVG icons for info chips — no emoji
+  const calIcon='<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#c060a0" stroke-width="1.8" stroke-linecap="round"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>';
+  const clkIcon='<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#c060a0" stroke-width="1.8" stroke-linecap="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>';
+  const pinIcon='<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#c060a0" stroke-width="1.8" stroke-linecap="round"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>';
+  const starIcon='<svg width="13" height="13" viewBox="0 0 24 24" fill="#f7c948"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>';
+
+  // host initials fallback
+  const hostInitial = (h&&h.fullName)?h.fullName[0]:(s.host[0]||'H');
+  const hostGrad = (h&&h.avatarGrad)||'linear-gradient(135deg,#e8a0c0,#9b6fc0)';
+
+  document.getElementById('detail-body').innerHTML=`
+    <!-- Quick info chips — SVG icons, no emoji -->
+    <div style="display:flex;gap:10px;padding:20px 20px 0;">
+      ${[[calIcon,s.date],[clkIcon,s.time.split('\u2013')[0].trim()],[pinIcon,s.dist]].map(([svg,v])=>`
+        <div style="flex:1;background:#fff;border-radius:16px;padding:14px 6px 12px;text-align:center;box-shadow:0 2px 10px rgba(0,0,0,.07);">
+          <div style="display:flex;justify-content:center;margin-bottom:6px;">${svg}</div>
+          <div style="font-size:11px;color:#6b5580;font-weight:600;font-family:'Satoshi','DM Sans',sans-serif;letter-spacing:-.1px;line-height:1.35;">${v}</div>
+        </div>`).join('')}
+    </div>
+
+    <!-- Host card -->
+    <div style="margin:16px 20px 0;">
+      <button onclick="openHost('${s.host}')" style="width:100%;background:#fff;border:none;border-radius:22px;overflow:hidden;cursor:pointer;text-align:left;box-shadow:0 4px 20px rgba(0,0,0,.1);transition:transform .12s;" onmousedown="this.style.transform='scale(.98)'" onmouseup="this.style.transform='scale(1)'">
+        <!-- Banner: gradient always visible, photo on top fades in/out -->
+        <div style="height:68px;position:relative;overflow:hidden;background:${fbg};">
+          <img src="${photoUrl}" style="position:absolute;inset:0;width:100%;height:200%;object-fit:cover;object-position:center top;opacity:1;" loading="lazy" onerror="this.style.opacity=0"/>
+          <div style="position:absolute;inset:0;background:rgba(0,0,0,.18);"></div>
+          <svg viewBox="0 0 390 68" preserveAspectRatio="none" style="position:absolute;bottom:0;width:100%;height:50%;"><path d="M0,34 C120,68 260,10 390,38 L390,68 L0,68 Z" fill="white"/></svg>
+        </div>
+        <!-- Host info: avatar overlaps banner -->
+        <div style="padding:0 16px 16px;margin-top:-26px;position:relative;">
+          <div style="display:flex;align-items:flex-end;gap:12px;margin-bottom:10px;">
+            <div style="position:relative;flex-shrink:0;">
+              <!-- Avatar: initials always shown, photo loaded over via JS -->
+              <div id="hd-av" style="width:52px;height:52px;border-radius:50%;border:3px solid white;box-shadow:0 3px 14px rgba(0,0,0,.15);background:${hostGrad};display:flex;align-items:center;justify-content:center;font-family:'Satoshi',sans-serif;font-size:20px;font-weight:700;color:white;overflow:hidden;flex-shrink:0;">${hostInitial}</div>
+              <div style="position:absolute;bottom:1px;right:1px;width:17px;height:17px;border-radius:50%;background:#007AFF;border:2px solid white;display:flex;align-items:center;justify-content:center;">
+                <svg width="8" height="6" viewBox="0 0 8 6" fill="none"><path d="M1 3l2 2L7 1" stroke="white" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+              </div>
+            </div>
+            <div style="flex:1;padding-bottom:3px;min-width:0;">
+              <div style="font-family:'Satoshi','DM Sans',sans-serif;font-size:17px;font-weight:700;color:#1c0d2e;letter-spacing:-.2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${h?h.fullName:s.host}</div>
+              <div style="font-size:12px;color:#007AFF;font-weight:600;font-family:'Satoshi',sans-serif;margin-top:1px;">Domain Expert Verified</div>
+            </div>
+            <span style="font-size:13px;color:#c060a0;font-weight:600;font-family:'Satoshi',sans-serif;flex-shrink:0;padding-bottom:3px;">View &rarr;</span>
+          </div>
+          <p style="font-size:13px;color:#9980b8;line-height:1.58;margin-bottom:12px;font-family:'Satoshi','DM Sans',sans-serif;">${h?h.bio.slice(0,110)+'&hellip;':''}</p>
+          <div style="display:flex;gap:18px;align-items:center;">
+            ${h?[['Classes',h.classes+''],['Students',h.students+'+'],['Rating',''+h.rating]].map(([l,v],i)=>`
+              <div style="display:flex;flex-direction:column;">
+                <div style="display:flex;align-items:center;gap:3px;">
+                  <span style="font-family:'Satoshi','DM Sans',sans-serif;font-size:17px;font-weight:800;color:#1c0d2e;">${v}</span>
+                  ${i===2?starIcon:''}
+                </div>
+                <div style="font-size:10px;color:#9980b8;font-family:'Satoshi',sans-serif;margin-top:1px;">${l}</div>
+              </div>`).join(''):''}
+          </div>
+        </div>
+      </button>
+    </div>
+
+    <!-- About text -->
+    <div style="padding:16px 20px 0;">
+      <p style="font-size:15px;color:#6b5580;line-height:1.72;font-family:'Satoshi','DM Sans',sans-serif;">A curated local session in ${s.city}. Small groups, personal attention, everything provided. Perfect for beginners and curious hobbyists alike.</p>
+    </div>
+
+    <!-- Price block -->
+    <div style="margin:14px 20px 22px;background:rgba(192,96,160,.07);border-radius:18px;padding:16px 20px;display:flex;justify-content:space-between;align-items:center;">
+      <div>
+        <div style="font-size:12px;color:#9980b8;margin-bottom:4px;font-family:'Satoshi',sans-serif;font-weight:500;">Price per person</div>
+        <div style="font-family:'Satoshi','DM Sans',sans-serif;font-size:36px;font-weight:900;color:#c060a0;letter-spacing:-1.5px;line-height:1;">\u20b9${s.price}</div>
+      </div>
+      <div style="text-align:right;">
+        <div style="font-size:12px;color:#9980b8;margin-bottom:4px;font-family:'Satoshi',sans-serif;font-weight:500;">Spots left</div>
+        <div style="font-family:'Satoshi','DM Sans',sans-serif;font-size:36px;font-weight:900;color:#c060a0;letter-spacing:-1.5px;line-height:1;">${s.spots}</div>
+      </div>
+    </div>`;
+
+  // Load host portrait photo via JS after render — avoids broken img in inline HTML
+  if(HOST_PHOTOS[s.host]){
+    const av=document.getElementById('hd-av');
+    if(av){
+      const img=new Image();
+      img.onload=()=>{
+        av.style.backgroundImage='url('+img.src+')';
+        av.style.backgroundSize='cover';
+        av.style.backgroundPosition='center';
+        av.textContent='';
+      };
+      img.src=HOST_PHOTOS[s.host];
+    }
+  }
+}
+
+/* ─────────────────────────────────────────
+   HOST PROFILE
+───────────────────────────────────────── */
+let hTab='about';
+function openHost(key){S.hostkey=key;hTab='about';goTo('host');}
+function rHost(){
+  const h=HOSTS[S.hostkey]; if(!h) return;
+  // Find the session this host runs (for photo)
+  const hostSess=SESSIONS.find(s=>s.host===S.hostkey);
+  const photoKey=hostSess?SESSION_PHOTO_KEY[hostSess.id]:'pottery';
+  document.getElementById('host-head').style.background='#d8d0e8';
+  document.getElementById('host-head').innerHTML=`
+    <img src="${PHOTOS[photoKey]}" style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover;" loading="lazy"/>
+    <div style="position:absolute;inset:0;background:linear-gradient(to bottom,rgba(0,0,0,.15) 0%,rgba(0,0,0,.1) 50%,rgba(0,0,0,.35) 100%);"></div>
+    <button onclick="goBack()" style="position:absolute;top:14px;left:16px;z-index:10;width:34px;height:34px;border-radius:50%;background:rgba(255,255,255,.22);backdrop-filter:blur(10px);border:none;color:white;display:flex;align-items:center;justify-content:center;cursor:pointer;">
+      <svg width="10" height="16" viewBox="0 0 10 16" fill="none"><path d="M8 1L2 8l6 7" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+    </button>
+    <!-- Avatar with real photo -->
+    <div style="position:absolute;bottom:-46px;left:50%;transform:translateX(-50%);z-index:2;">
+      <div style="position:relative;">
+        <div style="width:92px;height:92px;border-radius:50%;overflow:hidden;border:4px solid white;box-shadow:0 4px 20px rgba(0,0,0,.25);">
+          <img src="${HOST_PHOTOS[S.hostkey]||''}" style="width:92px;height:92px;object-fit:cover;display:block;" loading="lazy" onerror="this.style.display='none';this.parentElement.style.background='${HOSTS[S.hostkey]?.avatarGrad||'#e8d0f0'}';this.parentElement.innerHTML='<div style=\\'width:84px;height:84px;border-radius:50%;display:flex;align-items:center;justify-content:center;color:white;font-size:32px;font-weight:700;\\'>${(HOSTS[S.hostkey]?.fullName||'H')[0]}</div>'"/>
+        </div>
+        <div style="position:absolute;bottom:3px;right:3px;width:26px;height:26px;border-radius:50%;background:#007AFF;border:2.5px solid white;display:flex;align-items:center;justify-content:center;">
+          <svg width="11" height="8" viewBox="0 0 11 8" fill="none"><path d="M1 4l3 3L10 1" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        </div>
+      </div>
+    </div>`;
+
+  document.getElementById('host-body').innerHTML=`
+    <!-- Identity -->
+    <div style="padding:60px 20px 16px;text-align:center;background:#fff;border-bottom:.5px solid rgba(0,0,0,.07);">
+      <h2 style="font-family:'Satoshi','DM Sans',sans-serif;font-size:24px;font-weight:800;color:#1c0d2e;margin-bottom:3px;">${h.fullName}</h2>
+      <div style="display:flex;align-items:center;justify-content:center;gap:5px;margin-bottom:8px;">
+        <span style="font-size:13px;font-weight:600;color:#007AFF;">Domain Expert Verified</span>
+        <svg width="14" height="14" viewBox="0 0 24 24"><path d="M12 2L15.09 8.26L22 9.27L17 14.14L18.18 21.02L12 17.77L5.82 21.02L7 14.14L2 9.27L8.91 8.26L12 2Z" fill="#007AFF"/></svg>
+      </div>
+      <p style="font-size:14px;color:#9980b8;line-height:1.55;max-width:290px;margin:0 auto 16px;">${h.bio}</p>
+      <div style="display:grid;grid-template-columns:1fr 1fr 1fr;border-top:.5px solid rgba(0,0,0,.08);">
+        ${[['Classes',h.classes],['Students',h.students+'+'],['Rating',h.rating]].map(([l,v],i)=>`
+          <div style="padding:14px 8px;text-align:center;${i<2?'border-right:.5px solid rgba(0,0,0,.08);':''}">
+            <div style="font-family:'Satoshi','DM Sans',sans-serif;font-size:22px;font-weight:800;color:#1c0d2e;display:flex;align-items:center;justify-content:center;gap:3px;">${v}${i===2?'<svg width="14" height="14" viewBox="0 0 24 24" fill="#f7c948"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>':''}</div>
+            <div style="font-size:11px;color:#9980b8;margin-top:2px;font-family:'Satoshi',sans-serif;">${l}</div>
+          </div>`).join('')}
+      </div>
+    </div>
+
+    <!-- Seg -->
+    <div style="padding:14px 20px;background:#fff;border-bottom:.5px solid rgba(0,0,0,.07);">
+      <div style="display:flex;background:#f8f4ff;border-radius:12px;padding:3px;">
+        ${['about','portfolio','reviews'].map(t=>`<button onclick="switchHTab('${t}')" style="flex:1;height:32px;border-radius:9px;border:none;background:${hTab===t?'#fff':'transparent'};font-size:13px;font-weight:${hTab===t?600:500};color:${hTab===t?'#1c0d2e':'#9980b8'};cursor:pointer;box-shadow:${hTab===t?'0 1px 4px rgba(0,0,0,.1)':'none'};transition:all .2s;text-transform:capitalize;">${t}</button>`).join('')}
+      </div>
+    </div>
+
+    <div id="h-body-c" style="padding:16px 20px;background:#faf4f4;"></div>`;
+  rHBody();
+}
+function switchHTab(t){hTab=t;rHost();}
+function rHBody(){
+  const h=HOSTS[S.hostkey]; if(!h) return;
+  const c=document.getElementById('h-body-c'); if(!c) return;
+  const s=S.session;
+  if(hTab==='about'){
+    c.innerHTML=`
+      <!-- Skill bar -->
+      <div style="background:#fff;border-radius:18px;padding:18px;margin-bottom:12px;box-shadow:0 2px 10px rgba(0,0,0,.06);">
+        <div style="font-size:15px;font-weight:600;color:#1c0d2e;margin-bottom:12px;">Skill Level: <span style="color:#c060a0;">${h.skill.label}</span></div>
+        <div style="height:8px;background:#f4f0ff;border-radius:4px;overflow:hidden;margin-bottom:8px;">
+          <div style="height:100%;border-radius:4px;background:linear-gradient(90deg,#4fd17a,#38b2c0);width:${h.skill.level}%;"></div>
+        </div>
+        <div style="display:flex;justify-content:space-between;font-size:11px;color:#9980b8;"><span>Beginner</span><span>Intermediate</span><span>Expert</span></div>
+      </div>
+      <!-- Tags -->
+      <div style="background:#fff;border-radius:18px;padding:16px;margin-bottom:12px;box-shadow:0 2px 10px rgba(0,0,0,.06);">
+        <div style="font-size:12px;font-weight:600;color:#9980b8;text-transform:uppercase;letter-spacing:.5px;margin-bottom:10px;">Specialities</div>
+        <div style="display:flex;flex-wrap:wrap;gap:8px;">${h.tags.map(t=>`<span style="padding:6px 14px;border-radius:10px;background:#f8f4ff;color:#6b5580;font-size:13px;font-weight:500;">${t}</span>`).join('')}</div>
+      </div>
+      <!-- Session -->
+      ${s?`<div style="background:#fff;border-radius:18px;overflow:hidden;box-shadow:0 2px 10px rgba(0,0,0,.06);">
+        <div style="height:80px;position:relative;overflow:hidden;background:#d8d0e8;">
+          <img src="${PHOTOS[SESSION_PHOTO_KEY[s.id]||'pottery']}" style="width:100%;height:100%;object-fit:cover;display:block;" loading="lazy"onerror="this.style.background='linear-gradient(160deg,#c8b8e8,#a890c8)';this.removeAttribute('src')" />
+          <div style="position:absolute;inset:0;background:linear-gradient(to bottom,transparent 30%,rgba(0,0,0,.45));"></div>
+          <div style="position:absolute;bottom:10px;left:14px;"><div style="font-family:'Satoshi','DM Sans',sans-serif;font-size:16px;font-weight:700;color:white;">${s.title}</div></div>
+        </div>
+        <div style="padding:12px 14px;display:flex;justify-content:space-between;align-items:center;">
+          <div><div style="font-size:12px;color:#9980b8;">${s.time}</div><div style="font-size:12px;color:#9980b8;margin-top:2px;">${s.city} · ${s.dist}</div></div>
+          <div style="text-align:right;"><div style="font-family:'Satoshi','DM Sans',sans-serif;font-size:20px;font-weight:800;color:#c060a0;">₹${s.price}</div></div>
+        </div>
+      </div>`:''}`;
+  } else if(hTab==='portfolio'){
+    // Use the session photo as main portfolio image, others as activity photos
+    const portfolioPhotos=[
+      PHOTOS[SESSION_PHOTO_KEY[S.session?.id||1]||'pottery'],
+      PHOTOS['yoga'],
+      PHOTOS['dance'],
+      PHOTOS['photo'],
+    ];
+    c.innerHTML=`
+      <p style="font-size:14px;color:#9980b8;margin-bottom:12px;">Work and sessions by ${h.fullName.split(' ')[0]}.</p>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;">
+        ${portfolioPhotos.map((pUrl,i)=>`
+          <div style="border-radius:16px;overflow:hidden;aspect-ratio:1;position:relative;box-shadow:0 3px 14px rgba(0,0,0,.14);">
+            <img src="${pUrl}" style="width:100%;height:100%;object-fit:cover;display:block;" loading="lazy"/>
+            <div style="position:absolute;inset:0;background:linear-gradient(to bottom,transparent 50%,rgba(0,0,0,.4));"></div>
+            ${i===1?`<div style="position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);width:36px;height:36px;border-radius:50%;background:rgba(255,255,255,.25);backdrop-filter:blur(6px);display:flex;align-items:center;justify-content:center;font-size:14px;">▶</div>`:''}
+          </div>`).join('')}
+      </div>`;
+  } else {
+    c.innerHTML=`
+      <div style="background:#fff;border-radius:18px;padding:16px;margin-bottom:12px;box-shadow:0 2px 10px rgba(0,0,0,.06);display:flex;align-items:center;gap:16px;">
+        <div style="text-align:center;">
+          <div style="font-family:'Satoshi','DM Sans',sans-serif;font-size:40px;font-weight:800;color:#c060a0;line-height:1;">${h.rating}</div>
+          <div style="font-size:11px;color:#9980b8;margin-top:2px;">out of 5</div>
+        </div>
+        <div style="flex:1;">
+          ${[5,4,3].map(n=>`<div style="display:flex;align-items:center;gap:6px;margin-bottom:5px;">
+            <span style="font-size:10px;color:#9980b8;width:6px;">${n}</span>
+            <span style="color:#f7c948;font-size:11px;">★</span>
+            <div style="flex:1;height:4px;background:#f4f0ff;border-radius:2px;overflow:hidden;"><div style="height:100%;background:#f7c948;width:${n===5?85:n===4?12:3}%;border-radius:2px;"></div></div>
+          </div>`).join('')}
+        </div>
+      </div>
+      ${h.reviews.map(r=>`
+        <div style="background:#fff;border-radius:16px;padding:14px;margin-bottom:10px;box-shadow:0 2px 8px rgba(0,0,0,.07);">
+          <div style="display:flex;align-items:center;gap:10px;margin-bottom:8px;">
+            <div style="width:34px;height:34px;border-radius:50%;background:rgba(192,96,160,.12);color:#c060a0;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;flex-shrink:0;">${r.name.slice(0,2)}</div>
+            <div style="flex:1;">
+              <div style="font-size:15px;font-weight:600;color:#1c0d2e;">${r.name}</div>
+            </div>
+            <div style="color:#f7c948;font-size:13px;">Array.from({length:r.stars},()=>'<svg width="11" height="11" viewBox="0 0 24 24" fill="#f7c948"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>').join('')</div>
+          </div>
+          <p style="font-size:14px;color:#6b5580;line-height:1.55;">"${r.text}"</p>
+        </div>`).join('')}`;
+  }
+}
+
+/* ─────────────────────────────────────────
+   BOOKING
+───────────────────────────────────────── */
+function rBooking(){
+  const s=S.session;
+  document.getElementById('booking-body').innerHTML=`
+    <div style="padding:8px 24px 24px;">
+      <h2 style="font-family:'Satoshi','DM Sans',sans-serif;font-size:28px;font-weight:800;color:#1c0d2e;margin-bottom:4px;letter-spacing:-.4px;">Book your spot</h2>
+      <p style="font-size:14px;color:#9980b8;">${s.title} · ${HOSTS[s.host]?.fullName||s.host}</p>
+    </div>
+    <!-- Date -->
+    <div style="padding:0 24px 20px;">
+      <p style="font-size:12px;font-weight:600;color:#9980b8;text-transform:uppercase;letter-spacing:.5px;margin-bottom:10px;">Date</p>
+      <div style="display:flex;gap:10px;">
+        ${[s.date,'31 MAY','07 JUN'].map((d,i)=>`
+          <button onclick="selDate(${i})" id="db${i}" style="flex:1;padding:14px 6px;border-radius:16px;border:none;background:${S.sdate===i?'linear-gradient(135deg,#f093c0,#9b6fc0)':'rgba(255,255,255,.85)'};cursor:pointer;text-align:center;backdrop-filter:blur(8px);box-shadow:${S.sdate===i?'0 4px 14px rgba(192,96,160,.35)':'0 2px 8px rgba(0,0,0,.06)'};transition:all .2s;">
+            <div style="font-family:'Satoshi','DM Sans',sans-serif;font-size:22px;font-weight:800;color:${S.sdate===i?'white':'#1c0d2e'};line-height:1;">${d.split(' ')[0]}</div>
+            <div style="font-size:10px;font-weight:600;color:${S.sdate===i?'rgba(255,255,255,.8)':'#9980b8'};letter-spacing:.5px;margin-top:3px;">${d.split(' ')[1]}</div>
+          </button>`).join('')}
+      </div>
+    </div>
+    <!-- Guests -->
+    <div style="padding:0 24px 20px;">
+      <p style="font-size:12px;font-weight:600;color:#9980b8;text-transform:uppercase;letter-spacing:.5px;margin-bottom:10px;">Guests</p>
+      <div style="background:rgba(255,255,255,.85);backdrop-filter:blur(10px);border-radius:18px;padding:16px 20px;display:flex;align-items:center;justify-content:space-between;box-shadow:0 2px 10px rgba(0,0,0,.06);">
+        <button onclick="chG(-1)" style="width:36px;height:36px;border-radius:50%;background:#f8f4ff;border:none;font-size:20px;color:#1c0d2e;font-weight:300;display:flex;align-items:center;justify-content:center;cursor:pointer;">−</button>
+        <div style="text-align:center;">
+          <span id="g-c" style="font-family:'Satoshi','DM Sans',sans-serif;font-size:36px;font-weight:800;color:#1c0d2e;">${S.guests}</span>
+          <div id="g-l" style="font-size:12px;color:#9980b8;">person</div>
+        </div>
+        <button onclick="chG(1)" style="width:36px;height:36px;border-radius:50%;background:linear-gradient(135deg,#f093c0,#9b6fc0);border:none;font-size:20px;color:white;display:flex;align-items:center;justify-content:center;cursor:pointer;">+</button>
+      </div>
+      <p style="font-size:12px;color:#9980b8;text-align:center;margin-top:6px;">${s.spots} spots remaining</p>
+    </div>
+    <!-- Summary -->
+    <div id="bk-sum" style="padding:0 24px 20px;"></div>
+    <!-- Infra -->
+    <div style="margin:0 24px 24px;background:rgba(255,255,255,.7);backdrop-filter:blur(10px);border-radius:18px;padding:14px;display:flex;gap:12px;box-shadow:0 2px 8px rgba(0,0,0,.06);">
+      <div style="width:38px;height:38px;border-radius:12px;background:rgba(74,154,106,.12);display:flex;align-items:center;justify-content:center;flex-shrink:0;color:#4a9a6a;">${ic('handshake','#4a9a6a',18)}</div>
+      <div><div style="font-size:14px;font-weight:600;color:#1c0d2e;margin-bottom:2px;">Materials via Peer Lending</div><div style="font-size:12px;color:#9980b8;">All equipment provided through Quokka's host network.</div></div>
+    </div>
+    <div style="padding:0 24px 8px;"><button class="pill-dark" onclick="goTo('payment')">Proceed to payment</button></div>`;
+  updSum();
+}
+function selDate(i){S.sdate=i;rBooking();}
+function chG(d){S.guests=Math.max(1,Math.min(S.session.spots,S.guests+d));const gc=document.getElementById('g-c'),gl=document.getElementById('g-l');if(gc)gc.textContent=S.guests;if(gl)gl.textContent=S.guests>1?'people':'person';updSum();}
+function updSum(){
+  const s=S.session; if(!s) return;
+  const tot=s.price*S.guests,fee=Math.round(tot*.05),gst=Math.round(tot*.18),grand=Math.round(tot*1.23);
+  const c=document.getElementById('bk-sum'); if(!c) return;
+  c.innerHTML=`
+    <div style="background:rgba(255,255,255,.8);backdrop-filter:blur(10px);border-radius:18px;overflow:hidden;box-shadow:0 2px 10px rgba(0,0,0,.06);">
+      <div style="padding:16px 18px;">
+        <p style="font-size:12px;font-weight:600;color:#9980b8;text-transform:uppercase;letter-spacing:.5px;margin-bottom:12px;">Order summary</p>
+        ${[[`${s.title} × ${S.guests}`,`₹${tot}`],['Platform fee (5%)',`₹${fee}`],['GST (18%)',`₹${gst}`]].map(([l,v])=>`
+          <div style="display:flex;justify-content:space-between;margin-bottom:8px;">
+            <span style="font-size:15px;color:#6b5580;">${l}</span>
+            <span style="font-size:15px;color:#9980b8;">${v}</span>
+          </div>`).join('')}
+      </div>
+      <div style="padding:14px 18px;background:rgba(192,96,160,.08);display:flex;justify-content:space-between;align-items:center;">
+        <span style="font-size:16px;font-weight:600;color:#1c0d2e;">Total</span>
+        <span style="font-family:'Satoshi','DM Sans',sans-serif;font-size:26px;font-weight:800;color:#c060a0;">₹${grand}</span>
+      </div>
+    </div>`;
+  S.booking={session:s,guests:S.guests,date:['24 MAY','31 MAY','07 JUN'][S.sdate],total:grand};
+}
+
+/* ─────────────────────────────────────────
+   PAYMENT
+───────────────────────────────────────── */
+function rPayment(){
+  const b=S.booking;
+  const meths=[{id:'upi',ic:'📱',l:'UPI',s:'Pay via UPI ID or QR'},{id:'card',ic:'💳',l:'Card',s:'Visa, Mastercard, Rupay'},{id:'nb',ic:'🏦',l:'Net Banking',s:'All Indian banks'},{id:'wallet',ic:'💰',l:'Wallet',s:'PhonePe, Paytm, GPay'}];
+  document.getElementById('payment-body').innerHTML=`
+    <div style="padding:8px 24px 20px;">
+      <h2 style="font-family:'Satoshi','DM Sans',sans-serif;font-size:28px;font-weight:800;color:#1c0d2e;margin-bottom:4px;letter-spacing:-.4px;">Pay securely</h2>
+    </div>
+    <!-- Amount -->
+    <div style="margin:0 24px 20px;background:linear-gradient(135deg,#f093c0,#9b6fc0);border-radius:22px;padding:22px;text-align:center;box-shadow:0 6px 24px rgba(192,96,160,.4);">
+      <p style="font-size:13px;color:rgba(255,255,255,.75);margin-bottom:6px;">Total amount</p>
+      <div style="font-family:'Satoshi','DM Sans',sans-serif;font-size:46px;font-weight:800;color:white;letter-spacing:-1px;">₹${b.total}</div>
+      <p style="font-size:13px;color:rgba(255,255,255,.75);margin-top:6px;">${b.session.title} · ${b.guests} guest${b.guests>1?'s':''} · ${b.date}</p>
+    </div>
+    <!-- Methods -->
+    <div style="padding:0 24px;">
+      <p style="font-size:12px;font-weight:600;color:#9980b8;text-transform:uppercase;letter-spacing:.5px;margin-bottom:10px;">Payment method</p>
+      <div style="background:rgba(255,255,255,.8);backdrop-filter:blur(10px);border-radius:18px;overflow:hidden;box-shadow:0 2px 10px rgba(0,0,0,.06);margin-bottom:14px;">
+        ${meths.map((m,i)=>`
+          <div onclick="selPay('${m.id}')" style="padding:14px 16px;display:flex;align-items:center;gap:12px;cursor:pointer;background:${S.paymethod===m.id?'rgba(192,96,160,.07)':'transparent'};${i<meths.length-1?'border-bottom:.5px solid rgba(0,0,0,.07);':''}transition:background .15s;">
+            <div style="width:38px;height:38px;border-radius:11px;background:${S.paymethod===m.id?'rgba(192,96,160,.15)':'#f8f4ff'};display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0;">${m.ic}</div>
+            <div style="flex:1;"><div style="font-size:15px;font-weight:${S.paymethod===m.id?600:400};color:${S.paymethod===m.id?'#c060a0':'#1c0d2e'};">${m.l}</div><div style="font-size:12px;color:#9980b8;">${m.s}</div></div>
+            ${S.paymethod===m.id?`<div style="width:22px;height:22px;border-radius:50%;background:linear-gradient(135deg,#f093c0,#9b6fc0);display:flex;align-items:center;justify-content:center;"><svg width="10" height="8" viewBox="0 0 10 8" fill="none"><path d="M1 4l2.5 2.5L9 1" stroke="white" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg></div>`:'<svg width="8" height="14" viewBox="0 0 8 14" fill="none" style="opacity:.2"><path d="M1 1l6 6-6 6" stroke="#1c0d2e" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>'}
+          </div>`).join('')}
+      </div>
+      ${S.paymethod==='upi'?`
+      <div style="background:rgba(255,255,255,.8);backdrop-filter:blur(10px);border-radius:14px;overflow:hidden;box-shadow:0 2px 8px rgba(0,0,0,.06);margin-bottom:12px;">
+        <input id="upi-i" placeholder="yourname@upi" style="width:100%;padding:16px;border:none;outline:none;font-size:17px;color:#1c0d2e;background:transparent;"/>
+      </div>
+      <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:20px;">
+        ${['@okicici','@ybl','@paytm','@upi'].map(s=>`<button onclick="document.getElementById('upi-i').value='user${s}'" style="padding:7px 14px;border-radius:20px;background:rgba(255,255,255,.7);backdrop-filter:blur(8px);border:none;font-size:13px;color:#9980b8;cursor:pointer;">${s}</button>`).join('')}
+      </div>`:'<div style="height:20px;"></div>'}
+      <button class="pill-dark" id="pay-go" onclick="doPay()">Pay ₹${b.total}</button>
+    </div>`;
+}
+function selPay(m){S.paymethod=m;rPayment();}
+function doPay(){
+  const btn=document.getElementById('pay-go'); if(!btn) return;
+  btn.textContent='Processing…';btn.style.opacity='.6';
+  setTimeout(()=>goTo('confirm'),2000);
+}
+
+/* ─────────────────────────────────────────
+   CONFIRM
+───────────────────────────────────────── */
+function rConfirm(){
+  const b=S.booking,h=HOSTS[b.session.host];
+  document.getElementById('confirm-body').innerHTML=`
+    <!-- Hero -->
+    <div style="background:linear-gradient(170deg,#e8d0f8 0%,#f0c0d8 40%,#f8c8b0 70%,#fce0b0 100%);padding:40px 28px 32px;text-align:center;position:relative;overflow:hidden;">
+      <div style="position:absolute;top:-80px;left:50%;transform:translateX(-50%);width:360px;height:360px;border-radius:50%;background:radial-gradient(circle,rgba(255,255,255,.3) 0%,transparent 65%);"></div>
+      <div style="position:relative;z-index:1;">
+        <div style="width:80px;height:80px;border-radius:50%;background:rgba(255,255,255,.3);backdrop-filter:blur(10px);margin:0 auto 16px;display:flex;align-items:center;justify-content:center;font-size:36px;">✦</div>
+        <h1 style="font-family:'Satoshi','DM Sans',sans-serif;font-size:36px;font-weight:800;color:white;letter-spacing:-.5px;margin-bottom:6px;text-shadow:0 2px 10px rgba(0,0,0,.15);">You did it!</h1>
+        <p style="font-size:15px;color:rgba(255,255,255,.85);line-height:1.5;">${b.session.title}<br><span style="font-weight:600;">${b.date}</span></p>
+      </div>
+    </div>
+
+    <!-- Booking summary -->
+    <div style="margin:16px 20px 0;background:#fff;border-radius:20px;overflow:hidden;box-shadow:0 4px 18px rgba(0,0,0,.09);">
+      <div style="padding:14px 18px;">
+        ${[['Session',b.session.title],['Host',h?h.fullName:b.session.host],['Location',b.session.city+', Bengaluru'],['Date',b.date],['Guests',b.guests+' person'+(b.guests>1?'s':'')],['Total paid','₹'+b.total]].map(([l,v])=>`
+          <div style="display:flex;justify-content:space-between;padding:8px 0;border-bottom:.5px solid rgba(0,0,0,.07);">
+            <span style="font-size:14px;color:#9980b8;">${l}</span>
+            <span style="font-size:14px;font-weight:500;color:#1c0d2e;">${v}</span>
+          </div>`).join('')}
+      </div>
+      <!-- QR -->
+      <div style="padding:22px;display:flex;flex-direction:column;align-items:center;background:#faf4f4;">
+        <div style="padding:14px;background:white;border-radius:18px;margin-bottom:12px;box-shadow:0 2px 12px rgba(0,0,0,.07);">${qrSVG(120)}</div>
+        <div style="font-family:'Satoshi','DM Sans',sans-serif;font-size:16px;font-weight:800;color:#1c0d2e;margin-bottom:3px;">Scan at session entry</div>
+        <div style="font-size:13px;color:#9980b8;text-align:center;">Show this to ${h?h.fullName.split(' ')[0]:b.session.host} on arrival</div>
+      </div>
+    </div>
+
+    <!-- Next steps -->
+    <div style="margin:14px 20px;background:#fff;border-radius:20px;overflow:hidden;box-shadow:0 2px 10px rgba(0,0,0,.07);">
+      ${[{key:'messages',t:'Message your host',d:'They\'ll send studio details 24h before'},{key:'badge',t:'Earn your first badge',d:'Complete the session to unlock badges'},{key:'star',t:'Leave a review',d:'Help other hobbyists find great hosts'}].map((n,i,a)=>`
+        <div style="padding:14px 16px;display:flex;gap:12px;align-items:center;${i<a.length-1?'border-bottom:.5px solid rgba(0,0,0,.07);':''}">
+          <div style="width:38px;height:38px;border-radius:12px;background:#f8f4ff;display:flex;align-items:center;justify-content:center;flex-shrink:0;color:#9980b8;">${ic(n.key,'#9980b8',18)}</div>
+          <div><div style="font-size:15px;font-weight:600;color:#1c0d2e;">${n.t}</div><div style="font-size:12px;color:#9980b8;margin-top:1px;">${n.d}</div></div>
+        </div>`).join('')}
+    </div>
+
+    <div style="padding:4px 24px 32px;">
+      <button class="pill-dark" onclick="goTo('main')">Back to sessions</button>
+    </div>`;
+}
+
+/* ─────────────────────────────────────────
+   HELPERS
+───────────────────────────────────────── */
+function qrSVG(sz){
+  return `<svg viewBox="0 0 80 80" width="${sz}" height="${sz}" fill="none">
+    <rect x="2" y="2" width="28" height="28" rx="3" stroke="#c060a0" stroke-width="2.5"/>
+    <rect x="8" y="8" width="16" height="16" rx="2" fill="#c060a0"/>
+    <rect x="50" y="2" width="28" height="28" rx="3" stroke="#c060a0" stroke-width="2.5"/>
+    <rect x="56" y="8" width="16" height="16" rx="2" fill="#c060a0"/>
+    <rect x="2" y="50" width="28" height="28" rx="3" stroke="#c060a0" stroke-width="2.5"/>
+    <rect x="8" y="56" width="16" height="16" rx="2" fill="#c060a0"/>
+    <rect x="50" y="50" width="8" height="8" rx="1" fill="#9b6fc0"/>
+    <rect x="60" y="50" width="8" height="8" rx="1" fill="#9b6fc0"/>
+    <rect x="70" y="50" width="8" height="8" rx="1" fill="#c060a0"/>
+    <rect x="50" y="60" width="8" height="8" rx="1" fill="#c060a0"/>
+    <rect x="70" y="60" width="8" height="8" rx="1" fill="#9b6fc0"/>
+    <rect x="50" y="70" width="8" height="8" rx="1" fill="#c060a0"/>
+    <rect x="60" y="70" width="8" height="8" rx="1" fill="#9b6fc0"/>
+    <rect x="70" y="70" width="8" height="8" rx="1" fill="#c060a0"/>
+    <rect x="35" y="2" width="6" height="6" rx="1" fill="#9b6fc0"/>
+    <rect x="35" y="14" width="6" height="6" rx="1" fill="#c060a0"/>
+    <rect x="35" y="26" width="6" height="6" rx="1" fill="#9b6fc0"/>
+    <rect x="2" y="35" width="6" height="6" rx="1" fill="#c060a0"/>
+    <rect x="14" y="35" width="6" height="6" rx="1" fill="#9b6fc0"/>
+    <rect x="26" y="35" width="6" height="6" rx="1" fill="#c060a0"/>
+  </svg>`;
+}
+
+setInterval(()=>{const n=new Date(),h=n.getHours()%12||12,m=String(n.getMinutes()).padStart(2,'0');const el=document.getElementById('sb-time');if(el)el.textContent=`${h}:${m}`;},1000);
+
+// Init tab icons
+(function initTabIcons(){
+  [['home','home'],['discover','discover'],['messages','messages'],['profile','profile']].forEach(([id,key])=>{
+    const el=document.getElementById('tib-'+id);
+    if(el) el.innerHTML=ic(key, id==='home'?'#c060a0':'#9980b8', 24);
+  });
+})();
+</script>
+</body>
+</html>
